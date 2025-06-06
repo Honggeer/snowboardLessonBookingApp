@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: snowboard-lesson-booking
+  profiles:
+    active: dev
+
+
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: 8080
