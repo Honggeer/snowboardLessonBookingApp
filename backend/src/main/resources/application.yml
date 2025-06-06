@@ -4,7 +4,11 @@ spring:
   profiles:
     active: dev
 
-
+  datasource:
+    driver-class-name: ${snowboard.driver-class-name}
+    url: jdbc:mysql://${snowboard.host}:${snowboard.port}/${snowboard.database}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${snowboard.username} # 你的开发数据库用户名
+    password: ${snowboard.password}
   jpa:
     open-in-view: false
     properties:

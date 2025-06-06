@@ -2,12 +2,24 @@ spring:
   config:
     activate:
       on-profile: dev # 表明这些配置在 'dev' profile激活时生效
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ski_booking_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root # 你的开发数据库用户名
-    password: Cc@981208 # 你的开发数据库密码
 
+# 你的开发数据库密码
+snowboard:
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  host: localhost
+  port: 3306
+  database: ski_booking_db
+  username: root
+  password: Cc@981208
+mybatis:
+  # (推荐) 指定你的XML Mapper文件的位置
+  mapper-locations: classpath*:mapper/**/*.xml
+  # (最关键的一项) 为你的实体类(Entity/POJO)设置别名包路径
+  # 这个路径必须是你存放 User.java, StudentProfile.java 等实体类的包名
+  type-aliases-package: com.geer.snowboard_lesson_booking.entity  # <--! 重点检查这里！
+  # (强烈推荐) 开启数据库下划线命名到Java驼峰命名的自动转换
+  configuration:
+    map-underscore-to-camel-case: true
   jpa:
     hibernate:
       ddl-auto: update # 开发时常用，根据实体自动更新表结构，或使用 create-drop
