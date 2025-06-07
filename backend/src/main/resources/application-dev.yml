@@ -3,7 +3,7 @@ spring:
     activate:
       on-profile: dev # 表明这些配置在 'dev' profile激活时生效
 
-# 你的开发数据库密码
+
 snowboard:
   driver-class-name: com.mysql.cj.jdbc.Driver
   host: localhost
@@ -12,12 +12,10 @@ snowboard:
   username: root
   password: Cc@981208
 mybatis:
-  # (推荐) 指定你的XML Mapper文件的位置
+
   mapper-locations: classpath*:mapper/**/*.xml
-  # (最关键的一项) 为你的实体类(Entity/POJO)设置别名包路径
-  # 这个路径必须是你存放 User.java, StudentProfile.java 等实体类的包名
-  type-aliases-package: com.geer.snowboard_lesson_booking.entity  # <--! 重点检查这里！
-  # (强烈推荐) 开启数据库下划线命名到Java驼峰命名的自动转换
+  type-aliases-package: com.geer.snowboard_lesson_booking.entity
+
   configuration:
     map-underscore-to-camel-case: true
   jpa:
@@ -32,6 +30,6 @@ mybatis:
 logging:
   level:
     org.springframework: INFO
-    com.yourpackage: DEBUG # 将 com.yourpackage 替换为你的项目包名，方便查看debug日志
+    com.geer: DEBUG # 将 com.yourpackage 替换为你的项目包名，方便查看debug日志
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
