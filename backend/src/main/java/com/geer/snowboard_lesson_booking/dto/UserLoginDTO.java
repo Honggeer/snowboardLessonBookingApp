@@ -6,6 +6,6 @@ import java.io.Serializable;
 @Data
 public class UserLoginDTO implements Serializable {
     private String email;
-    private String passwordHash;
+    private String password;
 
 }

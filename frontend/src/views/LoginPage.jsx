@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
-// 为了获得最佳视觉效果，建议使用一张高质量的雪山或滑雪背景图。
-// 这里我们使用一个来自unsplash.com的图片作为背景。
-// 替换为你自己的图片URL：
+import { loginApi } from '../api/user';
+
 import backgroundImageUrl from '../assets/login_BG.png';
 
 // 登录页面组件
@@ -11,25 +10,44 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(''); // 用于显示错误信息
-
+    const [isLoading, setIsLoading] = useState(false);
     // 表单提交处理函数 (目前是占位逻辑)
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault(); // 阻止浏览器默认的表单提交行为
+        setError('');
 
-        // 基本的输入验证
         if (!email || !password) {
             setError('邮箱和密码不能为空。');
             return;
         }
 
-        // --- 在这里添加调用后端API的逻辑 ---
-        console.log('正在尝试登录，邮箱:', email, '密码:', password);
-        setError(''); // 清除之前的错误信息
+        setIsLoading(true)// 开始登录，设置加载状态为true
 
-        // 模拟API调用失败
-        setTimeout(() => {
-            setError('邮箱或密码无效，请重试。');
-        }, 1000);
+        try {
+            // 3. 调用后端API
+            const response = await loginApi({email, password});
+
+            // 4. 根据后端返回的Result<T>对象进行判断
+            if (response.data.code === 1) {
+                // 登录成功
+                const userData = response.data.data;
+                console.log('登录成功!', userData);
+                alert(`欢迎回来, ${userData.firstName}! 您的Token是: ${userData.token}`);
+                // TODO: 在这里处理登录成功后的逻辑
+                // 例如：将token存入localStorage，然后跳转到主页
+                // localStorage.setItem('token', userData.token);
+                // window.location.href = '/dashboard';
+            } else {
+                // 登录失败，显示后端返回的错误信息
+                setError(response.data.msg || '登录失败，请稍后再试。');
+            }
+        } catch (err) {
+            // 捕获网络错误或服务器500等错误
+            console.error('登录请求失败:', err);
+            setError(err.response?.data?.msg || '网络错误，请检查您的连接。');
+        } finally {
+            setIsLoading(false); // 结束登录，设置加载状态为false
+        }
     };
 
     return (
