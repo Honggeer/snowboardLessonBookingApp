@@ -1,6 +1,7 @@
 package com.geer.snowboard_lesson_booking.mapper;
 
 import com.geer.snowboard_lesson_booking.entity.User;
+import com.geer.snowboard_lesson_booking.vo.UserLoginVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.web.bind.annotation.Mapping;
 
@@ -12,5 +13,6 @@ public interface UserMapper {
      * @return 用户对象
      */
     User findById(Long id);
+    User findByEmail(String email);
 
 }

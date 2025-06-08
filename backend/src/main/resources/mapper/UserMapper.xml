@@ -11,4 +11,12 @@
         WHERE
             id = #{id}
     </select>
+    <select id="findByEmail" resultType="com.geer.snowboard_lesson_booking.entity.User">
+        SELECT
+            *
+        FROM
+            users
+        WHERE
+            email = #{email}
+    </select>
 </mapper>
