@@ -11,6 +11,7 @@ import com.geer.snowboard_lesson_booking.exception.RegistrationFailedException;
 import com.geer.snowboard_lesson_booking.mapper.StudentProfileMapper;
 import com.geer.snowboard_lesson_booking.mapper.UserMapper;
 import com.geer.snowboard_lesson_booking.service.UserService;
+import com.geer.snowboard_lesson_booking.utils.JwtUtil;
 import com.geer.snowboard_lesson_booking.vo.UserLoginVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,6 +32,10 @@ public class UserServiceImpl implements UserService {
     private StudentProfileMapper studentProfileMapper;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
     @Override
     public User getUserById(Long id) {
         return userMapper.findById(id);
@@ -39,16 +46,24 @@ public class UserServiceImpl implements UserService {
         String email = userLoginDTO.getEmail();
         String password = userLoginDTO.getPassword();
         User user = userMapper.findByEmail(email);
-        // TODO: this is a fake password
-        if(user == null||!password.equals(user.getPasswordHash())) {
+        if(user == null||!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new LoginFailedException("用户名或密码错误");
         }
-        if (user.getStatus() != AccountStatus.ACTIVE) {
-            // TODO: 2025-06-08 send a link to user
+        if(user.getStatus() == AccountStatus.SUSPENDED){
+            throw new LoginFailedException("用户已被停用");
+        }
+        if (user.getStatus() == AccountStatus.UNVERIFIED) {
+            user.setVerificationToken(UUID.randomUUID().toString());//if the user is unverified, send a verification email
+            user.setTokenExpiry(LocalDateTime.now().plusHours(24));
+            if(emailService!=null){
+                emailService.sendVerificationEmail(user.getEmail(),user.getVerificationToken());
+            }
             throw new LoginFailedException("您的账户尚未验证，请检查您的邮箱");
         }
         // TODO: this is a fake token
-        String token = "a_fake_jwt_token_for_now";
+        Map<String,Object> claims = new HashMap<>();
+        claims.put("UserId",user.getId());
+        String token = jwtUtil.generateToken(claims);
         UserLoginVO userLoginVO = UserLoginVO.builder()
                 .id(user.getId())
                 .userName(user.getUserName())
@@ -71,9 +86,9 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(studentRegisterDTO,user);
         user.setRole(Role.STUDENT);
         user.setStatus(AccountStatus.UNVERIFIED);
-        // TODO: 2025-06-08 passcode encoding here
-        //user.setPasswordHash(passwordEncoder.encode(studentRegisterDTO.getPassword()));
-        user.setPasswordHash(studentRegisterDTO.getPassword());//this does not do encode
+        //encoded password
+        String encodedPassword = passwordEncoder.encode(studentRegisterDTO.getPassword());
+        user.setPasswordHash(encodedPassword);//this does not do encode
 
         user.setVerificationToken(UUID.randomUUID().toString());
         user.setTokenExpiry(LocalDateTime.now().plusHours(24));

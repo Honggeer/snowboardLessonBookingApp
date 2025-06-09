@@ -5,8 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c062f5f-f116-443d-a9b2-7bfb6d30d818" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/entity/User.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/enums/Role.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/properties/JwtProperties.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/utils/JwtUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/config/SecurityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/config/SecurityConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/geer/snowboard_lesson_booking/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +61,7 @@
       <updated>1749232439469</updated>
       <workItem from="1749232442459" duration="70000" />
       <workItem from="1749235492252" duration="44000" />
+      <workItem from="1749509584014" duration="4000" />
     </task>
     <servers />
   </component>
