@@ -13,4 +13,9 @@ public class GlobalExceptionHandler {
           log.error("Login Failed:{}",ex.getMessage());
           return Result.error(ex.getMessage());
     }
+    @ExceptionHandler(RegistrationFailedException.class)
+    public Result<Object> handleRegistrationFailedException(RegistrationFailedException ex){
+        log.error("Registration failed: {}",ex.getMessage());
+        return Result.error(ex.getMessage());
+    }
 }

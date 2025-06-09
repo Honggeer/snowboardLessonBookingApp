@@ -1,4 +1,5 @@
 package com.geer.snowboard_lesson_booking.entity;
+import com.geer.snowboard_lesson_booking.enums.AccountStatus;
 import com.geer.snowboard_lesson_booking.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,11 +15,13 @@ public class User {
     private String email;
     private String phoneNumber;
     private String passwordHash;
-    private String firstName;
-    private String lastName;
+    private String userName;
     private Role role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private AccountStatus status;
+    private String verificationToken;
+    private LocalDateTime tokenExpiry;
 
 
 }

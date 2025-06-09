@@ -3,7 +3,17 @@ spring:
     name: snowboard-lesson-booking
   profiles:
     active: dev
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: snowboardgeer@gmail.com
+    password: xuyuucvjmfgbnyzi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     driver-class-name: ${snowboard.driver-class-name}
     url: jdbc:mysql://${snowboard.host}:${snowboard.port}/${snowboard.database}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true

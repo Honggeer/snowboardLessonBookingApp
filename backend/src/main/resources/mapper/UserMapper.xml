@@ -3,6 +3,18 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.geer.snowboard_lesson_booking.mapper.UserMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (email, phone_number, password_hash, user_name, role, status, verification_token, token_expiry)
+        VALUES
+            (#{email}, #{phoneNumber}, #{passwordHash}, #{userName}, #{role}, #{status}, #{verificationToken}, #{tokenExpiry})
+    </insert>
+    <update id="updateStatus" parameterType="User">
+        UPDATE users
+        SET status = #{status},
+            verification_token = #{verificationToken},
+            token_expiry = #{tokenExpiry}
+        WHERE id = #{id}
+    </update>
     <select id="findById" resultType="User">
         SELECT
             *
@@ -18,5 +30,8 @@
             users
         WHERE
             email = #{email}
+    </select>
+    <select id="findByVerificationToken" resultType="com.geer.snowboard_lesson_booking.entity.User">
+        SELECT * FROM users WHERE verification_token = #{token}
     </select>
 </mapper>

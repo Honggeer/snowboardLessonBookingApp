@@ -1,5 +1,6 @@
 package com.geer.snowboard_lesson_booking.service;
 
+import com.geer.snowboard_lesson_booking.dto.StudentRegisterDTO;
 import com.geer.snowboard_lesson_booking.dto.UserLoginDTO;
 import com.geer.snowboard_lesson_booking.entity.User;
 import com.geer.snowboard_lesson_booking.result.Result;
@@ -8,4 +9,6 @@ import com.geer.snowboard_lesson_booking.vo.UserLoginVO;
 public interface UserService {
     User getUserById(Long id);
     UserLoginVO getUserByEmail(UserLoginDTO userLoginDTO);
+    void registerStudent(StudentRegisterDTO studentRegisterDTO);
+    boolean verifyUser(String token);
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geer.snowboard_lesson_booking.mapper.StudentProfileMapper">
+
+    <insert id="insert">
+        INSERT INTO student_profiles (user_id, date_of_birth, gender, height_cm, weight_kg, ability_level)
+        VALUES
+            (#{userId}, #{dateOfBirth}, #{gender}, #{heightCm}, #{weightKg}, #{abilityLevel})
+    </insert>
+</mapper>
