@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import App from './App.jsx';
-import LoginPage from './views/LoginPage.jsx'; // 导入我们的登录页
+import LoginPage from './views/LoginPage.jsx';// 导入我们的登录页
+import RegisterPage from "./views/RegisterPage.jsx";
 import './index.css'; // 导入Tailwind样式
 
 // 创建路由配置
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
             {
                 path: '/login', // 当访问 /login 时
                 element: <LoginPage />, // 显示LoginPage组件
+            },
+            {
+                path: '/register',
+                element: <RegisterPage />,
             },
             // 你可以添加一个默认首页
             {

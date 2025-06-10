@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { loginApi } from '../api/user';
 
 import backgroundImageUrl from '../assets/login_BG.png';
-
+import {Link} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 // 登录页面组件
 export default function LoginPage() {
+    const navigate = useNavigate();
     // 使用React Hooks来管理表单输入的状态
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -35,8 +37,8 @@ export default function LoginPage() {
                 alert(`欢迎回来, ${userData.firstName}! 您的Token是: ${userData.token}`);
                 // TODO: 在这里处理登录成功后的逻辑
                 // 例如：将token存入localStorage，然后跳转到主页
-                // localStorage.setItem('token', userData.token);
-                // window.location.href = '/dashboard';
+                localStorage.setItem('token', userData.token);
+                navigate('/dashboard');
             } else {
                 // 登录失败，显示后端返回的错误信息
                 setError(response.data.msg || '登录失败，请稍后再试。');
@@ -157,9 +159,9 @@ export default function LoginPage() {
 
                 <p className="mt-6 text-center text-sm text-gray-400">
                     还没有账户?{' '}
-                    <a href="#" className="font-medium text-cyan-400 hover:text-cyan-300">
+                    <Link to="/register" className="font-medium text-cyan-400 hover:text-cyan-300">
                         立即注册
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

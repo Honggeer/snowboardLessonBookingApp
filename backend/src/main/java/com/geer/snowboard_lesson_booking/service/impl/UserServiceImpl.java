@@ -55,6 +55,7 @@ public class UserServiceImpl implements UserService {
         if (user.getStatus() == AccountStatus.UNVERIFIED) {
             user.setVerificationToken(UUID.randomUUID().toString());//if the user is unverified, send a verification email
             user.setTokenExpiry(LocalDateTime.now().plusHours(24));
+            userMapper.updateStatus(user);
             if(emailService!=null){
                 emailService.sendVerificationEmail(user.getEmail(),user.getVerificationToken());
             }
@@ -78,9 +79,6 @@ public class UserServiceImpl implements UserService {
     public void registerStudent(StudentRegisterDTO studentRegisterDTO) {
         if(userMapper.findByEmail(studentRegisterDTO.getEmail())!=null){
             throw new RegistrationFailedException("用户名已被注册");
-        }
-        if(!studentRegisterDTO.getPassword().equals(studentRegisterDTO.getConfirmPassword())){
-            throw new RegistrationFailedException("请保证两次输入的密码一致");
         }
         User user = new User();
         BeanUtils.copyProperties(studentRegisterDTO,user);

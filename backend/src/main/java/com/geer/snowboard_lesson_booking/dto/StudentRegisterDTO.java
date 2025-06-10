@@ -5,15 +5,15 @@ import com.geer.snowboard_lesson_booking.enums.Gender;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class StudentRegisterDTO {
     String email;
     String password;
-    String confirmPassword;
     String userName;
     String phoneNumber;
-    LocalDateTime dateOfBirth;
+    Date dateOfBirth;
     Gender gender;
     int heightCm;
     double weightKg;

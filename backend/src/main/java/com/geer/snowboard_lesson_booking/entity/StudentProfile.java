@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Builder
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StudentProfile {
     private Long userId;
-    private LocalDateTime dateOfBirth;
+    private Date dateOfBirth;
     private Gender gender;
     private int heightCm;
     private double weightKg;
