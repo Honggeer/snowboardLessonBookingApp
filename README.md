@@ -1,107 +1,144 @@
-# Ski & Snowboard Lesson Booking Platform
+# 🏔️ Snowboard Lesson Booking App
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Backend: Spring Boot](https://img.shields.io/badge/Backend-Spring_Boot-green.svg)
-![Frontend: Vue.js](https://img.shields.io/badge/Frontend-Vue.js-blue.svg)
-![Database: MySQL](https://img.shields.io/badge/Database-MySQL-orange.svg)
+An online platform for booking snowboard lessons with certified instructors. This app allows students to browse instructors, select preferred teaching styles, and book available time slots. Instructors can manage their availability and provide detailed teaching profiles.
 
-A full-stack web application designed to connect certified ski and snowboard instructors with students. This project serves as a comprehensive portfolio piece, built from the ground up using modern backend and frontend development practices with Spring Boot and Vue.js.
+---
 
-## ✨ Key Features
+## 🚀 Features
 
-* **Role-Based Access Control:** Secure registration and login for two distinct user roles: `STUDENT` and `INSTRUCTOR`.
-* **Instructor Profile Management:** Instructors can set up their detailed profiles, including their CASI certification level, years of experience, a personal bio, and teaching specialties.
-* **Dynamic Availability Scheduling:** Instructors can manage their available time slots for lessons, which students can then book.
-* **Student Profile Customization:** Students can create profiles detailing their ability level (Beginner, Intermediate, Pro) and preferred riding styles (Carving, Park, etc.).
-* **Lesson Browse & Booking:** Students can browse available instructors and book lessons based on the instructor's availability.
-* **Booking Management:** Both students and instructors have dashboards to view and manage their upcoming and past lessons.
+- User authentication and role-based access (Admin / Instructor / Student)
+- Instructor profile management with CASI level and teaching content
+- Student profile with skill level and style preferences
+- Time slot management and real-time booking availability
+- Support for multiple teaching styles
+- Email verification and secure password hashing
 
-## 🛠️ Built With
+---
 
-This project uses a modern, decoupled architecture.
+## 🛠️ Tech Stack
 
-**Backend:**
-* [Java 17](https://www.oracle.com/java/)
-* [Spring Boot](https://spring.io/projects/spring-boot) - Core framework
-* [Spring Security](https://spring.io/projects/spring-security) - For authentication and authorization
-* [Spring Data JPA (Hibernate)](https://spring.io/projects/spring-data-jpa) - For database interaction
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [MySQL](https://www.mysql.com/) - Relational Database
+### Backend:
+- **Java 17**
+- **Spring Boot 3**
+- **Spring Data JPA**
+- **Spring Security**
+- **MySQL**
+- **Hibernate**
+- **Redis** (for caching)
+- **Maven**
+- **Docker**
 
-**Frontend:**
-* [Vue.js (Vue 3)](https://vuejs.org/) - Core framework
-* [Vue Router](https://router.vuejs.org/) - For client-side routing
-* [Pinia](https://pinia.vuejs.org/) - For state management
-* [Axios](https://axios-http.com/) - For making API requests
+### Frontend:
+- **React.js**
+- **Tailwind CSS**
+- **Axios**
+- (Coming soon...)
 
-## 📄 Database Schema
+### Deployment & Tools:
+- **AWS EC2** (deployed instance)
+- **NGINX** (reverse proxy)
+- **GitHub Actions** (CI/CD in progress)
+- **IntelliJ IDEA** (development IDE)
 
-The database is designed to be normalized and scalable, with a clear separation of concerns.
-## 🚀 Getting Started
+---
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+## 🧩 Database Schema Overview
 
-### Prerequisites
+### `users` – Core User Table
 
-* Java JDK 17 or later
-* Apache Maven 3.6+
-* Node.js and npm
-* MySQL Server
+| Field             | Type                                              | Description                  |
+|------------------|---------------------------------------------------|------------------------------|
+| id               | BIGINT, Primary Key                               | User ID                      |
+| email            | VARCHAR(255), Unique, Not Null                    | Login email                  |
+| phone_number     | VARCHAR(50), Unique, Not Null                     | Contact number               |
+| password_hash    | VARCHAR(255), Not Null                            | Hashed password              |
+| user_name        | VARCHAR(100), Not Null                            | Username                     |
+| role             | ENUM('ADMIN', 'INSTRUCTOR', 'STUDENT')            | User role                    |
+| status           | ENUM('UNVERIFIED', 'ACTIVE', 'SUSPENDED')         | Account status               |
+| verification_token | VARCHAR(255), Unique                           | Email verification token     |
+| token_expiry     | DATETIME                                          | Token expiration timestamp   |
+| created_at       | TIMESTAMP, Default CURRENT_TIMESTAMP              | Record creation time         |
+| updated_at       | TIMESTAMP, Auto-updated                           | Last update timestamp        |
 
-### Installation
+---
 
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
-    ```
+### `instructor_profiles` – Instructor Details
 
-2.  **Backend Setup:**
-    * Open the project in your favorite IDE (e.g., IntelliJ IDEA).
-    * Create a MySQL database for the project. e.g., `ski_booking_db`.
-    * Navigate to `src/main/resources/` and configure your `application-dev.yml`:
-        ```yaml
-        spring:
-          datasource:
-            url: jdbc:mysql://localhost:3306/ski_booking_db?useSSL=false&serverTimezone=UTC
-            username: your_mysql_username
-            password: your_mysql_password
-        ```
-    * Let Maven download the dependencies.
-    * Run the Spring Boot application.
+| Field             | Type                                                   | Description             |
+|------------------|--------------------------------------------------------|-------------------------|
+| user_id          | BIGINT, Primary Key (FK to `users`)                    | Linked user ID          |
+| casi_level       | ENUM('LEVEL_1', 'LEVEL_2', 'LEVEL_3', 'LEVEL_4', 'PARK_1', 'PARK_2') | CASI Certification Level |
+| experience_years | INT, Not Null                                          | Years of experience     |
+| bio              | TEXT                                                   | Bio introduction        |
+| teaching_content | TEXT                                                   | Description of lessons  |
 
-3.  **Frontend Setup:**
-    * Navigate to the frontend directory (e.g., `/frontend`):
-        ```sh
-        cd frontend
-        ```
-    * Install NPM packages:
-        ```sh
-        npm install
-        ```
-    * Start the frontend development server:
-        ```sh
-        npm run dev
-        ```
+---
 
-4.  **Database Initialization:**
-    * Connect to your MySQL database using a client (DBeaver, MySQL Workbench, etc.).
-    * Run the SQL script located at `src/main/resources/schema.sql` (or wherever you place it) to create all the necessary tables.
+### `student_profiles` – Student Details
 
-You should now be able to access the application at `http://localhost:8080` (or your configured frontend port).
+| Field         | Type                                                  | Description             |
+|--------------|-------------------------------------------------------|-------------------------|
+| user_id      | BIGINT, Primary Key (FK to `users`)                   | Linked user ID          |
+| date_of_birth| DATE, Not Null                                        | Date of birth           |
+| gender       | ENUM('MALE', 'FEMALE', 'OTHER'), Not Null             | Gender                  |
+| height_cm    | INT, Not Null                                         | Height in cm            |
+| weight_kg    | DECIMAL(5, 2), Not Null                               | Weight in kg            |
+| ability_level| ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'PRO')  | Skill level (optional)  |
 
-## 🗺️ Roadmap
+---
 
-* [ ] **Payment Integration:** Integrate with Stripe or PayPal for online lesson payments.
-* [ ] **Review and Rating System:** Allow students to rate and review instructors after a lesson.
-* [ ] **Real-time Notifications:** Implement notifications (e.g., via WebSockets or email) for booking confirmations and reminders.
-* [ ] **Calendar View:** A visual calendar for both students and instructors to manage schedules.
-* [ ] **Admin Dashboard:** A separate interface for administrators to manage users and content.
+### `styles` – Teaching Styles
 
-## 📜 License
+| Field | Type                            | Description         |
+|-------|---------------------------------|---------------------|
+| id    | INT, Primary Key, Auto-increment| Style ID            |
+| name  | VARCHAR(100), Unique, Not Null  | Style name          |
 
-Distributed under the MIT License. See `LICENSE` for more information.
+---
 
-## Acknowledgements
-* Acknowledge any third-party libraries or resources used.
-* Hat tip to anyone whose code was used as inspiration.
+### `student_styles` – Student Style Preferences (Many-to-Many)
+
+| Field       | Type     | Description           |
+|-------------|----------|-----------------------|
+| student_id  | BIGINT   | Linked student ID (FK)|
+| style_id    | INT      | Linked style ID (FK)  |
+| Primary Key | (student_id, style_id)           |
+
+---
+
+### `availabilities` – Instructor Time Slots
+
+| Field         | Type                              | Description                     |
+|---------------|-----------------------------------|---------------------------------|
+| id            | BIGINT, Primary Key               | Slot ID                         |
+| instructor_id | BIGINT, Not Null (FK to `users`)  | Linked instructor               |
+| start_time    | DATETIME, Not Null                | Start of availability           |
+| end_time      | DATETIME, Not Null                | End of availability             |
+| is_booked     | TINYINT(1), Default 0             | Booking status                  |
+| notes         | TEXT                              | Optional notes                  |
+| created_at    | TIMESTAMP, Default CURRENT_TIMESTAMP | Creation time               |
+| updated_at    | TIMESTAMP, Auto-updated           | Last updated time               |
+
+---
+
+## 🧪 Development & Testing
+
+- Environment config via `application.yml` and profile-based separation (`application-dev.yml`)
+- Dockerized MySQL and Redis setup (see `docker-compose.yml`)
+- API testing with Postman (collections available)
+- Frontend dev under `client/` (React app)
+
+---
+
+## 📦 Setup Instructions
+
+```bash
+# Backend
+cd backend/
+mvn clean install
+./mvnw spring-boot:run
+
+# Frontend (if already initialized)
+cd client/
+npm install
+npm run dev
