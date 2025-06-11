@@ -120,7 +120,6 @@ public class UserServiceImpl implements UserService {
         userMapper.updateStatus(user);
         return user;
     }
-
     @Transactional
     @Override
     public void registerInstructor(InstructorRegisterDTO instructorRegisterDTO) {
@@ -132,7 +131,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         BeanUtils.copyProperties(instructorRegisterDTO,user);
         user.setRole(Role.INSTRUCTOR);
-        user.setStatus(AccountStatus.PENDING_APPROVAL);
+        user.setStatus(AccountStatus.UNVERIFIED);
         user.setPasswordHash(passwordEncoder.encode(instructorRegisterDTO.getPassword()));
         user.setVerificationToken(UUID.randomUUID().toString());
         user.setTokenExpiry(LocalDateTime.now().plusHours(24));//don't forget add token...
@@ -174,4 +173,10 @@ public class UserServiceImpl implements UserService {
             emailService.sendVerificationEmail(user.getEmail(),user.getVerificationToken());
         }
     }
+
+    @Override
+    public List<SkillType> getSkills() {
+        return skillTypeMapper.findAll();
+    }
+
 }

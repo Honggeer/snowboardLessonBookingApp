@@ -47,8 +47,20 @@ export default function RegisterPage() {
         e.preventDefault();
         setError('');
         setSuccess('');
+        if (formData.password.length < 8) {
+            setError("密码长度不能少于8个字符。");
+            return;
+        }
         if (formData.password !== formData.confirmPassword) {
             setError('两次输入的密码不一致。');
+            return;
+        }
+        if (formData.weightKg > 200){
+            setError("请输入真实体重。");
+            return;
+        }
+        if (formData.heightCm > 250){
+            setError("请输入真实身高。");
             return;
         }
 

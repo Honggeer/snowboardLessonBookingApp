@@ -14,5 +14,9 @@ export const registerStudentApi = (data) => {
     // 注意：这里的URL路径是相对路径，Vite代理会自动将其转发到 http://localhost:8080/api/users/login
     return axios.post('/api/users/register/student', data);
 };
+export const registerInstructorApi = (data) => {
+    // 注意：这里的URL路径是相对路径，Vite代理会自动将其转发到 http://localhost:8080/api/users/instructor
+    return axios.post('/api/users/register/instructor', data);
+};
 // 未来你可以在这里添加更多用户相关的API请求，比如注册、获取用户信息等
 // export const registerApi = (data) => { ... };

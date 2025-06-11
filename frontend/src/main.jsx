@@ -7,7 +7,8 @@ import LoginPage from './views/LoginPage.jsx';// 导入我们的登录页
 import RegisterPage from "./views/RegisterPage.jsx";
 import './index.css';
 import DashboardPage from "./views/DashboardPage.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx"; // 导入Tailwind样式
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import InstructorRegisterPage from "./views/InstructorRegisterPage.jsx"; // 导入Tailwind样式
 
 // 创建路由配置
 const router = createBrowserRouter([
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
             {
                 path: '/register',
                 element: <RegisterPage />,
+            },
+            {
+                path: '/InstructorRegister',
+                element: <InstructorRegisterPage />,
             },
             // 你可以添加一个默认首页
             {
