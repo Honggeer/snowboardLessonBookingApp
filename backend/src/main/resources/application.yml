@@ -24,6 +24,16 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  servlet:
+    multipart:
+      max-file-size: 5MB   # 设置单个文件最大为5MB
+      max-request-size: 20MB # 设置单次请求最大为20MB (例如一次上传多个证书)
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_S3_REGION}
+    access-key-id: ${AWS_S3_ACCESS_KEY_ID}
+    access-key-secret: ${AWS_S3_ACCESS_KEY_SECRET}
 
 server:
   port: 8080
@@ -31,3 +41,4 @@ snowboard:
   jwt:
     secret-key: ${JWT_SECRET_KEY}
     ttl: 86400000
+

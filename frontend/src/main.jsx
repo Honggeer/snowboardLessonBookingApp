@@ -5,7 +5,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App.jsx';
 import LoginPage from './views/LoginPage.jsx';// 导入我们的登录页
 import RegisterPage from "./views/RegisterPage.jsx";
-import './index.css'; // 导入Tailwind样式
+import './index.css';
+import DashboardPage from "./views/DashboardPage.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx"; // 导入Tailwind样式
 
 // 创建路由配置
 const router = createBrowserRouter([
@@ -17,6 +19,16 @@ const router = createBrowserRouter([
             {
                 path: '/login', // 当访问 /login 时
                 element: <LoginPage />, // 显示LoginPage组件
+            },
+            {
+                element: <ProtectedRoute />, // 使用这个组件包裹所有需要保护的页面
+                children: [
+                    {
+                        path: 'dashboard', // 当访问 /dashboard 时
+                        element: <DashboardPage />, // 显示仪表盘
+                    },
+                    // 未来可以添加更多受保护的页面，比如 /profile, /settings 等
+                ] // 显示LoginPage组件
             },
             {
                 path: '/register',
