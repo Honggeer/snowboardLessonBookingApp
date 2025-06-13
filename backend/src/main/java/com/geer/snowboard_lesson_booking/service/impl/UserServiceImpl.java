@@ -162,6 +162,7 @@ public class UserServiceImpl implements UserService {
             newSkill.setInstructorId(newInstructorId);
             newSkill.setSkillTypeId(skillType.getId());
             newSkill.setCertificateUrl(submission.getCertificateUrl());
+            newSkill.setSubmittedAt(LocalDateTime.now());
             skillsToInsert.add(newSkill);
         }
 

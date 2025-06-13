@@ -10,4 +10,14 @@
         VALUES
             (#{userId}, #{avatarUrl}, #{idCardUrl},#{bio},#{teachingContent}, #{experienceYears})
     </insert>
+    <update id="update" parameterType="com.geer.snowboard_lesson_booking.entity.InstructorProfile">
+        UPDATE instructor_profiles
+        <set>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="experienceYears != null">experience_years = #{experienceYears},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="teachingContent != null">teaching_content = #{teachingContent},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

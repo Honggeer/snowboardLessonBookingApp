@@ -15,6 +15,18 @@
             token_expiry = #{tokenExpiry}
         WHERE id = #{id}
     </update>
+    <update id="update" parameterType="com.geer.snowboard_lesson_booking.entity.User">
+        UPDATE users
+        <set>
+            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="userName != null">user_name = #{userName},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="verificationToken != null">verification_token = #{verificationToken},</if>
+            <if test="tokenExpiry != null">token_expiry = #{tokenExpiry},</if>
+            <if test="passwordHash != null">password_hash = #{passwordHash},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
     <select id="findById" resultType="User">
         SELECT
             *

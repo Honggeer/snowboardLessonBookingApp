@@ -20,4 +20,6 @@ public interface UserMapper {
     User findByVerificationToken(String token);
     void updateStatus(User user);
 
+    void update(User user);
+
 }

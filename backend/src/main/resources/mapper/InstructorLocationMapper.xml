@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geer.snowboard_lesson_booking.mapper.InstructorLocationMapper">
+    <insert id="insertBatch">
+        INSERT INTO instructor_locations (instructor_id, resort_id) VALUES
+        <foreach collection="list" item="location" separator=",">
+            (#{location.instructorId}, #{location.resortId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteByInstructorId">
+        DELETE FROM instructor_locations WHERE instructor_id = #{instructorId}
+    </delete>
+    <select id="findLocationNamesByInstructorId" resultType="java.lang.String">
+        SELECT sr.name
+        FROM instructor_locations il
+                 JOIN ski_resorts sr ON il.resort_id = sr.id
+        WHERE il.instructor_id = #{instructorId}
+    </select>
+</mapper>

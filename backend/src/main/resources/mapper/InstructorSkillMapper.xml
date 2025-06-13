@@ -11,4 +11,27 @@
             (#{skill.instructorId}, #{skill.skillTypeId}, #{skill.certificateUrl}, 'PENDING')
         </foreach>
     </insert>
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO instructor_skills
+            (instructor_id, skill_type_id, certificate_url, status, submitted_at)
+        VALUES
+            (#{instructorId}, #{skillTypeId}, #{certificateUrl}, 'PENDING', NOW())
+    </insert>
+    <select id="findSkillsByInstructorId" resultType="com.geer.snowboard_lesson_booking.vo.InstructorSkillVO">
+        SELECT
+            st.display_name as displayName,
+            isk.certificate_url as certificateUrl,
+            isk.status,
+            isk.submitted_at as submittedAt,
+            isk.approved_at as approvedAt
+        FROM
+            instructor_skills isk
+                JOIN
+            skill_types st ON isk.skill_type_id = st.id
+        WHERE
+            isk.instructor_id = #{instructorId}
+        ORDER BY
+            isk.submitted_at DESC
+    </select>
+
 </mapper>
