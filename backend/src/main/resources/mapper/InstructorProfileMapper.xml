@@ -8,7 +8,7 @@
         INSERT INTO instructor_profiles
             (user_id, avatar_url, bio, id_card_url, teaching_content, experience_years)
         VALUES
-            (#{userId}, #{avatarUrl}, #{idCardUrl},#{bio},#{teachingContent}, #{experienceYears})
+            (#{userId}, #{avatarUrl},#{bio}, #{idCardUrl},#{teachingContent}, #{experienceYears})
     </insert>
     <update id="update" parameterType="com.geer.snowboard_lesson_booking.entity.InstructorProfile">
         UPDATE instructor_profiles

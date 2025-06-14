@@ -25,7 +25,8 @@
             <if test="tokenExpiry != null">token_expiry = #{tokenExpiry},</if>
             <if test="passwordHash != null">password_hash = #{passwordHash},</if>
         </set>
-        WHERE id = #{id}
+        WHERE
+            id = #{id}
     </update>
     <select id="findById" resultType="User">
         SELECT

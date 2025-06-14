@@ -10,15 +10,18 @@ import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.utils.BaseContext;
 import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class InstructorServiceImpl implements InstructorService {
     @Autowired
     private InstructorProfileMapper instructorProfileMapper;
@@ -51,15 +54,20 @@ public class InstructorServiceImpl implements InstructorService {
     @Override
     public void updateMyProfile(InstructorProfileUpdateDTO profileUpdateDTO) {
         Long currentId = BaseContext.getCurrentId();
-        User uptodateUser = new User();
-        BeanUtils.copyProperties(profileUpdateDTO,uptodateUser);
-        uptodateUser.setId(currentId);
-        userMapper.update(uptodateUser);
-        InstructorProfile profileToUpdate = new InstructorProfile();
-
-        BeanUtils.copyProperties(profileUpdateDTO, profileToUpdate);
-        profileToUpdate.setUserId(currentId);
-        instructorProfileMapper.update(profileToUpdate);
+        if(hasUserUpdates(profileUpdateDTO)){
+            User uptodateUser = new User();
+            BeanUtils.copyProperties(profileUpdateDTO,uptodateUser);
+            uptodateUser.setId(currentId);
+            userMapper.update(uptodateUser);
+            log.info("Updated user profile(ID:{})", currentId);
+        }
+        if(hasInstructorProfileUpdates(profileUpdateDTO)){
+            InstructorProfile profileToUpdate = new InstructorProfile();
+            BeanUtils.copyProperties(profileUpdateDTO, profileToUpdate);
+            profileToUpdate.setUserId(currentId);
+            instructorProfileMapper.update(profileToUpdate);
+            log.info("Updated instructor profile(ID:{}).", currentId);
+        }
     }
     @Transactional
     @Override
@@ -84,6 +92,12 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    public List<String> getMyLocations() {
+        Long id = BaseContext.getCurrentId();
+        return instructorLocationMapper.findLocationNamesByInstructorId(id);
+    }
+
+    @Override
     public void updateMyLocations(LocationUpdateDTO locationUpdateDTO) {
         Long currentId = BaseContext.getCurrentId();
         // 1. 先删除该教练所有已存在的地点关联
@@ -97,5 +111,16 @@ public class InstructorServiceImpl implements InstructorService {
 
             instructorLocationMapper.insertBatch(locationsToInsert);
         }
+    }
+
+    private boolean hasInstructorProfileUpdates(InstructorProfileUpdateDTO dto) {
+        return StringUtils.hasText(dto.getAvatarUrl()) ||
+                dto.getExperienceYears() != null ||
+                StringUtils.hasText(dto.getBio()) ||
+                StringUtils.hasText(dto.getTeachingContent());
+    }
+    private boolean hasUserUpdates(InstructorProfileUpdateDTO dto) {
+        return StringUtils.hasText(dto.getUserName()) ||
+                StringUtils.hasText(dto.getPhoneNumber());
     }
 }

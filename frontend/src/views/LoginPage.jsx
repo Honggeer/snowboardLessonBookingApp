@@ -34,11 +34,23 @@ export default function LoginPage() {
                 // 登录成功
                 const userData = response.data.data;
                 console.log('登录成功!', userData);
-                alert(`欢迎回来, ${userData.firstName}! 您的Token是: ${userData.token}`);
-                // TODO: 在这里处理登录成功后的逻辑
-                // 例如：将token存入localStorage，然后跳转到主页
+
                 localStorage.setItem('token', userData.token);
-                navigate('/dashboard');
+                switch (userData.role) {
+                    case 'INSTRUCTOR':
+                        // 如果是教练，跳转到教练个人资料页
+                        navigate('/instructorProfile');
+                        break;
+                    case 'STUDENT':
+                        // 如果是学生，跳转到学生仪表盘或其他学生页面
+                        navigate('/dashboard');
+                        break;
+                    default:
+                        // 如果角色未知或没有角色，跳转到一个默认的主页
+                        console.warn(`未知的用户角色: ${userData.role}, 跳转到默认页。`);
+                        navigate('/');
+                        break;
+                }
             } else {
                 // 登录失败，显示后端返回的错误信息
                 setError(response.data.msg || '登录失败，请稍后再试。');

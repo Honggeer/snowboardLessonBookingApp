@@ -8,7 +8,8 @@ import RegisterPage from "./views/RegisterPage.jsx";
 import './index.css';
 import DashboardPage from "./views/DashboardPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import InstructorRegisterPage from "./views/InstructorRegisterPage.jsx"; // 导入Tailwind样式
+import InstructorRegisterPage from "./views/InstructorRegisterPage.jsx";
+import InstructorProfilePage from "./views/InstructorProfilePage.jsx"; // 导入Tailwind样式
 
 // 创建路由配置
 const router = createBrowserRouter([
@@ -25,12 +26,18 @@ const router = createBrowserRouter([
                 element: <ProtectedRoute />, // 使用这个组件包裹所有需要保护的页面
                 children: [
                     {
-                        path: 'dashboard', // 当访问 /dashboard 时
+                        path: '/dashboard', // 当访问 /dashboard 时
                         element: <DashboardPage />, // 显示仪表盘
                     },
+                    {
+                        path: '/instructorProfile',
+                        element: <InstructorProfilePage />,
+                    },
+
                     // 未来可以添加更多受保护的页面，比如 /profile, /settings 等
                 ] // 显示LoginPage组件
             },
+
             {
                 path: '/register',
                 element: <RegisterPage />,

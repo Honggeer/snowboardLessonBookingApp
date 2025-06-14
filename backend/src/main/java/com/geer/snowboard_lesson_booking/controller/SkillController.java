@@ -20,7 +20,7 @@ public class SkillController {
     @GetMapping("/skills")
     public Result<List<SkillType>> getSkills(){
         log.info("Getting all the skills");
-        List<SkillType> sklls = userService.getSkills();
-        return Result.success(sklls);
+        List<SkillType> skills = userService.getSkills();
+        return Result.success(skills);
     }
 }

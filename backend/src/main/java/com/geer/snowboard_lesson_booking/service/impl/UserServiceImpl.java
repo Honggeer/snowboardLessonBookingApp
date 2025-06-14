@@ -68,15 +68,15 @@ public class UserServiceImpl implements UserService {
             throw new LoginFailedException("您的信息正在审核中，请等待邮件通知");
         }
         Map<String,Object> claims = new HashMap<>();
-        claims.put("UserId",user.getId());
+        claims.put("userId",user.getId());
         String token = jwtUtil.generateToken(claims);
         UserLoginVO userLoginVO = UserLoginVO.builder()
                 .id(user.getId())
                 .userName(user.getUserName())
+                .role(user.getRole())
                 .token(token)
                 .build();
         return userLoginVO;
-
     }
 
     @Transactional
@@ -115,6 +115,8 @@ public class UserServiceImpl implements UserService {
         }
         if (user.getRole() == Role.STUDENT)
             user.setStatus(AccountStatus.ACTIVE);
+        if(user.getRole() == Role.INSTRUCTOR)
+            user.setStatus(AccountStatus.PENDING_APPROVAL);
         user.setTokenExpiry(null);
         user.setVerificationToken(null);
         userMapper.updateStatus(user);

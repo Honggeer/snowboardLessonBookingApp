@@ -15,6 +15,6 @@ public interface InstructorService {
     void addSkill(SkillAddDTO skillAddDTO);
 
     List<InstructorSkillVO> getMySkills();
-
+    List<String> getMyLocations();
     void updateMyLocations(LocationUpdateDTO locationUpdateDTO);
 }
