@@ -34,7 +34,11 @@ aws:
     region: ${AWS_S3_REGION}
     access-key-id: ${AWS_S3_ACCESS_KEY_ID}
     access-key-secret: ${AWS_S3_ACCESS_KEY_SECRET}
-
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
 server:
   port: 8080
 snowboard:

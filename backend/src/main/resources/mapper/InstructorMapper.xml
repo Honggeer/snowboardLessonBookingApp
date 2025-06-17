@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geer.snowboard_lesson_booking.mapper.InstructorMapper">
+
+    <select id="findInstructorsByCriteria" resultType="com.geer.snowboard_lesson_booking.vo.InstructorCardVO">
+        SELECT DISTINCT
+        -- 【核心修正】: 选择 user_id 并别名为 id，以匹配VO
+        ip.user_id,
+        u.user_name AS userName,
+        ip.teaching_content AS teachingContent,
+        ip.avatar_url AS avatarUrl,
+        ip.experience_years AS experienceYears,
+        ip.rating,
+        ip.bio
+        FROM
+
+        instructor_profiles ip
+        JOIN
+
+        users u ON ip.user_id = u.id
+        <where>
+            <if test="searchTerm != null and searchTerm != ''">
+                AND (u.user_name LIKE CONCAT('%', #{searchTerm}, '%') OR ip.teaching_content LIKE CONCAT('%', #{searchTerm}, '%'))
+            </if>
+            <if test="locationId != null">
+
+                AND EXISTS (SELECT 1 FROM instructor_locations il WHERE il.instructor_id = ip.user_id AND il.resort_id = #{locationId})
+            </if>
+            <if test="certificationId != null">
+
+                AND EXISTS (SELECT 1 FROM instructor_skills ins WHERE ins.instructor_id = ip.user_id AND ins.skill_type_id = #{certificationId} AND ins.status = 'APPROVED')
+            </if>
+        </where>
+
+        <if test="sortBy != null and sortBy != ''">
+            ORDER BY
+            <choose>
+                <when test="sortBy == 'rating'">ip.rating</when>
+                <when test="sortBy == 'experience'">ip.experience_years</when>
+                <otherwise>ip.rating</otherwise>
+            </choose>
+            <choose>
+                <when test="order == 'asc'">ASC</when>
+                <otherwise>DESC</otherwise>
+            </choose>
+        </if>
+    </select>
+</mapper>

@@ -1,22 +1,29 @@
 package com.geer.snowboard_lesson_booking.service.impl;
 
 import com.geer.snowboard_lesson_booking.dto.InstructorProfileUpdateDTO;
+import com.geer.snowboard_lesson_booking.dto.InstructorQueryDTO;
 import com.geer.snowboard_lesson_booking.dto.LocationUpdateDTO;
 import com.geer.snowboard_lesson_booking.dto.SkillAddDTO;
 import com.geer.snowboard_lesson_booking.entity.*;
 import com.geer.snowboard_lesson_booking.exception.RegistrationFailedException;
 import com.geer.snowboard_lesson_booking.mapper.*;
+import com.geer.snowboard_lesson_booking.result.PageResult;
 import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.utils.BaseContext;
+import com.geer.snowboard_lesson_booking.vo.InstructorCardVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +40,8 @@ public class InstructorServiceImpl implements InstructorService {
     private InstructorSkillMapper instructorSkillMapper;
     @Autowired
     private InstructorLocationMapper instructorLocationMapper;
+    @Autowired
+    private InstructorMapper instructorMapper;
 
     @Override
     public InstructorProfileVO getMyProfile() {
@@ -111,6 +120,36 @@ public class InstructorServiceImpl implements InstructorService {
 
             instructorLocationMapper.insertBatch(locationsToInsert);
         }
+    }
+
+    @Override
+    public void deleteMySkillById(Long id) {
+        instructorSkillMapper.deleteById(id);
+    }
+
+    @Override
+    public PageResult<InstructorCardVO> getInstructorList(InstructorQueryDTO instructorQueryDTO) {
+        PageHelper.startPage(instructorQueryDTO.getPage(),instructorQueryDTO.getPageSize());
+        List<InstructorCardVO> instructorCardVOS = instructorMapper.findInstructorsByCriteria(instructorQueryDTO);
+        if (CollectionUtils.isEmpty(instructorCardVOS)) {
+            return new PageResult<>(new ArrayList<>(), 0L, instructorQueryDTO.getPage(), instructorQueryDTO.getPageSize());
+        }
+        for (InstructorCardVO card : instructorCardVOS) {
+            // 2a. 为每个教练查询其技能列表
+            List<InstructorSkillVO> skills = instructorSkillMapper.findSkillsByInstructorId(card.getUserId());
+            card.setSkills(skills != null ? skills : new ArrayList<>());
+
+            // 2b. 为每个教练查询其地点列表
+            List<String> locations = instructorLocationMapper.findLocationNamesByInstructorId(card.getUserId());
+            card.setLocations(locations != null ? locations : new ArrayList<>());
+        }
+        PageInfo<InstructorCardVO> pageInfo = new PageInfo<>(instructorCardVOS);
+        return new PageResult<>(
+                pageInfo.getList(),
+                pageInfo.getTotal(),
+                pageInfo.getPageNum(),
+                pageInfo.getPageSize()
+        );
     }
 
     private boolean hasInstructorProfileUpdates(InstructorProfileUpdateDTO dto) {

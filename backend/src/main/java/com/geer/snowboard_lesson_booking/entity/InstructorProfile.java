@@ -18,4 +18,5 @@ public class InstructorProfile implements Serializable {
     private Integer experienceYears;
     private String bio;
     private String teachingContent;
+    private Double rating;
 }

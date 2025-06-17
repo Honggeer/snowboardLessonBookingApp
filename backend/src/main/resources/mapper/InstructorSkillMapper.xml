@@ -17,9 +17,13 @@
         VALUES
             (#{instructorId}, #{skillTypeId}, #{certificateUrl}, 'PENDING', NOW())
     </insert>
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM instructor_skills WHERE id = #{id}
+    </delete>
     <select id="findSkillsByInstructorId" resultType="com.geer.snowboard_lesson_booking.vo.InstructorSkillVO">
         SELECT
             st.display_name as displayName,
+            isk.id as id,
             isk.certificate_url as certificateUrl,
             isk.status,
             isk.submitted_at as submittedAt,

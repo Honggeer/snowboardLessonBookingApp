@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class InstructorSkillVO {
+    private Long id;
     private String displayName; // 例如 "CASI 2级"
     private String certificateUrl;
     private String status;

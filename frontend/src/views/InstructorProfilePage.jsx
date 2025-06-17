@@ -14,7 +14,8 @@ import {
     PlusCircle,
     ShieldCheck,
     Clock,
-    ShieldX
+    ShieldX,
+    ExternalLink
 } from 'lucide-react';
 import { uploadFileApi } from '../api/upload.js';
 import backgroundImageUrl from '../assets/profileBG.png';
@@ -195,12 +196,100 @@ function AddSkillModal({ isOpen, onClose, onSkillAdded }) {
         </div></div>
     );
 }
+function EditLocationsModal({ isOpen, onClose, onSaveSuccess, currentLocations }) {
+    const [allResorts, setAllResorts] = useState([]);
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            const fetchResorts = async () => {
+                try {
+                    const response = await instructorService.getAvailableResorts();
+                    if (response.code === 1 && Array.isArray(response.data)) {
+                        setAllResorts(response.data);
+                        // 初始化已选中的地点
+                        // 假设 /api/resorts 返回 [{id: 1, name: '万龙'}, ...]
+                        // 而 currentLocations 是 ['万龙', '南山']
+                        const currentIds = new Set();
+                        response.data.forEach(resort => {
+                            if (currentLocations.includes(resort.name)) {
+                                currentIds.add(resort.id);
+                            }
+                        });
+                        setSelectedIds(currentIds);
+                    }
+                } catch (error) {
+                    console.error("获取雪场列表失败:", error);
+                    alert("无法加载雪场列表，请稍后重试。");
+                }
+            };
+            fetchResorts();
+        }
+    }, [isOpen, currentLocations]);
+
+    if (!isOpen) return null;
+
+    const handleCheckboxChange = (resortId, isChecked) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            if (isChecked) {
+                newSet.add(resortId);
+            } else {
+                newSet.delete(resortId);
+            }
+            return newSet;
+        });
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        const locationUpdateDTO = { resortIds: Array.from(selectedIds) };
+        try {
+            const response = await instructorService.updateMyLocations(locationUpdateDTO);
+            if (response && response.code === 1) {
+                onSaveSuccess();
+                onClose();
+            } else {
+                throw new Error(response.message || "更新地点失败");
+            }
+        } catch (err) {
+            alert(`保存失败: ${err.message}`);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="modal-backdrop">
+            <div className="modal-content text-white">
+                <h2 className="text-2xl font-bold mb-6">编辑授课地点</h2>
+                <div className="space-y-2 grid grid-cols-2 md:grid-cols-3 gap-4">{allResorts.map(resort => (<div key={resort.id} className="flex items-center">
+                    <input type="checkbox" id={`resort-${resort.id}`} checked={selectedIds.has(resort.id)} onChange={(e) => handleCheckboxChange(resort.id, e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    <label htmlFor={`resort-${resort.id}`} className="ml-2">{resort.name}</label>
+                </div>))}
+                </div>
+                <div className="flex justify-end gap-4 mt-8">
+                    <button onClick={onClose} disabled={isSaving} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">取消</button>
+                    <button onClick={handleSave} disabled={isSaving} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg flex items-center">{isSaving ? <LoaderCircle className="animate-spin mr-2" /> : <Check size={16} className="mr-2" />}保存</button>
+                </div>
+            </div>
+        </div>);
+
+}
+function SkillDetailModal({ isOpen, onClose, skill }) {
+    if (!isOpen || !skill) return null;
+    const formatDate = (dateString) => { if (!dateString) return 'N/A'; return new Date(dateString).toLocaleString('zh-CN'); };
+    return (<div className="modal-backdrop"><div className="modal-content text-white"><h2 className="text-2xl font-bold mb-6">{skill.displayName} - 详情</h2><div className="space-y-4"><div><h3 className="font-semibold mb-2">证书预览:</h3><a href={skill.certificateUrl} target="_blank" rel="noopener noreferrer" className="block border border-gray-600 rounded-lg overflow-hidden"><img src={skill.certificateUrl} alt={`${skill.displayName} 证书`} className="w-full h-auto object-contain max-h-64"/></a><a href={skill.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline mt-2 inline-flex items-center gap-2">查看原图 <ExternalLink size={16}/></a></div><div className="grid grid-cols-2 gap-4"><div><strong className="block text-gray-400">认证状态:</strong> {skill.status}</div><div><strong className="block text-gray-400">提交时间:</strong> {formatDate(skill.submittedAt)}</div><div><strong className="block text-gray-400">审核时间:</strong> {formatDate(skill.approvedAt)}</div></div></div><div className="flex justify-end gap-4 mt-8"><button onClick={onClose} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg">关闭</button></div></div></div>);
+}
 export default function InstructorProfilePage() {
     const [profileData, setProfileData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
+    const [isEditLocationsModalOpen, setIsEditLocationsModalOpen] = useState(false);
+    const [selectedSkill, setSelectedSkill] = useState(null);
     const fetchProfile = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -224,7 +313,19 @@ export default function InstructorProfilePage() {
         fetchProfile();
     }, [fetchProfile]);
 
-
+    const handleSkillClick = async (skillVO) => {
+        if (skillVO.status === 'REJECTED') {
+            if (window.confirm(`您确定要删除这个被拒绝的技能认证'${skillVO.displayName}'吗？`)) {
+                try {
+                    await instructorService.deleteSkillCertification(skillVO.id);
+                    alert("删除成功！");
+                    fetchProfile();
+                } catch (err) { alert(`删除失败: ${err.message}`); }
+            }
+        } else {
+            setSelectedSkill(skillVO);
+        }
+    };
 
     if (isLoading) {
         return <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white"><LoaderCircle className="animate-spin mr-2" /> 正在加载...</div>;
@@ -260,7 +361,7 @@ export default function InstructorProfilePage() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 px-3 py-2 rounded-lg"><Award className="text-green-400" size={20} /><span className="text-white font-semibold text-lg">{profileData?.experienceYears}</span><span className="text-gray-400 text-sm">年经验</span></div>
-                                    <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 px-3 py-2 rounded-lg"><Star className="text-yellow-400" size={20} /><span className="text-white font-semibold text-lg">4.9</span><span className="text-gray-400 text-sm">/ 5.0 评分</span></div>
+                                    <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700 px-3 py-2 rounded-lg"><Star className="text-yellow-400" size={20} /><span className="text-white font-semibold text-lg">{profileData?.rating}</span><span className="text-gray-400 text-sm">/ 5.0 评分</span></div>
                                 </div>
                             </div>
                         </div>
@@ -272,17 +373,25 @@ export default function InstructorProfilePage() {
                                 <button onClick={() => setIsAddSkillModalOpen(true)} className="add-skill-btn text-sm font-semibold py-2 px-4 rounded-full flex items-center gap-2 transition-colors"><PlusCircle size={16} /> 添加认证</button>
                             </div>
                             <div className="flex flex-wrap gap-3">
-                                {profileData?.skills?.map((skillVO, index) => (
-                                    <span key={`${skillVO.displayName}-${index}`} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full flex items-center gap-2">
+                                {profileData?.skills?.map((skillVO) => (
+                                    <button key={skillVO.id} onClick={() => handleSkillClick(skillVO)} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full flex items-center gap-2 text-left">
                                         {skillVO.displayName}
                                         {skillVO.status === 'APPROVED' && <ShieldCheck size={16} className="text-green-400" title="已认证" />}
                                         {skillVO.status === 'PENDING' && <Clock size={16} className="text-yellow-400" title="审核中" />}
-                                        {skillVO.status === 'REJECTED' && <ShieldX size={16} className="text-red-400" title="审核中" />}
-                                    </span>
+                                        {skillVO.status === 'REJECTED' && <ShieldX size={16} className="text-red-400" title="已拒绝" />}
+                                    </button>
                                 ))}
                             </div>
                         </div>
-                        <div className="mt-10"><h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2"><MapPin size={20} className="text-gray-400" />代课地点</h2><div className="flex flex-wrap gap-3">{profileData?.locations?.map((loc, index) => <span key={`${loc}-${index}`} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full">{loc}</span>)}</div></div>
+                        <div className="mt-10">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-semibold text-white flex items-center gap-2"><MapPin size={20} className="text-gray-400" />代课地点</h2>
+                                <button onClick={() => setIsEditLocationsModalOpen(true)} className="action-btn text-sm font-semibold py-2 px-4 rounded-full flex items-center gap-2 transition-colors"><Edit3 size={16} /> 编辑地点</button>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                {profileData?.locations?.map((loc, index) => <span key={`${loc}-${index}`} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full">{loc}</span>)}
+                            </div>
+                        </div>
                         <div className="mt-10"><h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2"><Contact size={20} className="text-gray-400" />联系方式</h2><div className="space-y-3"><div className="flex items-center gap-4 text-gray-300"><Mail size={20} className="text-gray-400" /><span>{profileData?.email}</span></div><div className="flex items-center gap-4 text-gray-300"><Phone size={20} className="text-gray-400" /><span>{profileData?.phoneNumber}</span></div></div></div>
 
                     </div>
@@ -299,7 +408,17 @@ export default function InstructorProfilePage() {
                 isOpen={isAddSkillModalOpen}
                 onClose={() => setIsAddSkillModalOpen(false)}
                 onSkillAdded={fetchProfile}/>
+            <EditLocationsModal
+                isOpen={isEditLocationsModalOpen}
+                onClose={() => setIsEditLocationsModalOpen(false)}
+                onSaveSuccess={fetchProfile} currentLocations={profileData?.locations || []}
+            />
+            <SkillDetailModal
+                isOpen={!!selectedSkill}
+                onClose={() => setSelectedSkill(null)}
+                skill={selectedSkill} />
 
         </>
+
     );
 }

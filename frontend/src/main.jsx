@@ -9,7 +9,8 @@ import './index.css';
 import DashboardPage from "./views/DashboardPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import InstructorRegisterPage from "./views/InstructorRegisterPage.jsx";
-import InstructorProfilePage from "./views/InstructorProfilePage.jsx"; // 导入Tailwind样式
+import InstructorProfilePage from "./views/InstructorProfilePage.jsx";
+import InstructorListPage from "./views/InstructorListPage.jsx"; // 导入Tailwind样式
 
 // 创建路由配置
 const router = createBrowserRouter([
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
             {
                 path: '/register',
                 element: <RegisterPage />,
+            },
+            {
+                path: '/instructorList',
+                element: <InstructorListPage />, //todo: should be protected
             },
             {
                 path: '/InstructorRegister',

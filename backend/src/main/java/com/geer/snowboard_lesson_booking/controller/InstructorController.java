@@ -8,6 +8,7 @@ import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,9 +51,15 @@ public class InstructorController {
         return Result.success(locations);
     }
     @PutMapping("/locations")
-    public  Result addLocations(@RequestBody LocationUpdateDTO locationUpdateDTO){
+    public  Result<String> addLocations(@RequestBody LocationUpdateDTO locationUpdateDTO){
         log.info("Current instructor added locations: {}", locationUpdateDTO.getResortIds());
         instructorService.updateMyLocations(locationUpdateDTO);
         return Result.success("授课地点更新成功");
+    }
+    @DeleteMapping("/skills/{skillId}")
+    public Result<String> deleteInstructorSkill(@PathVariable Long skillId){
+        log.info("Deleting the skill: {}", skillId);
+        instructorService.deleteMySkillById(skillId);
+        return Result.success();
     }
 }

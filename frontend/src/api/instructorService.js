@@ -39,11 +39,15 @@ const updateProfile = async (profileData) => {
 const  addSkillCertification = async (formData)=> {
     return axiosInstance.post('/api/instructors/me/skills', formData)
 };
+
 // 导出这些函数，以便在你的组件中使用
 export const instructorService = {
     getProfile,
     updateProfile,
     addSkillCertification,
+    getAvailableResorts: async () => axiosInstance.get('api/locations').then(res => res.data),
+    updateMyLocations: async (locationUpdateDTO) => axiosInstance.put('api/instructors/me/locations', locationUpdateDTO).then(res => res.data),
     // 新增: 获取所有可选技能的API
     getAvailableSkills: async () => axiosInstance.get('/api/skills').then(res => res.data),
+    deleteSkillCertification: async (skillId) => axiosInstance.delete(`api/instructors/me/skills/${skillId}`).then(res => res.data),
 };
