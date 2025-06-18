@@ -6,7 +6,7 @@
 
     <select id="findInstructorsByCriteria" resultType="com.geer.snowboard_lesson_booking.vo.InstructorCardVO">
         SELECT DISTINCT
-        -- 【核心修正】: 选择 user_id 并别名为 id，以匹配VO
+
         ip.user_id,
         u.user_name AS userName,
         ip.teaching_content AS teachingContent,

@@ -1,36 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Star, Award, MapPin, Search, ShieldCheck } from 'lucide-react';
+import React, {useState, useEffect, useCallback} from 'react';
 import backgroundImageUrl from '../assets/profileBG.png';
-// ===================================================================================
-// 模拟API服务和数据 (当您的后端完成后，可以替换这部分)
-// ===================================================================================
+import {instructorService} from "../api/instructorService.js";
+import { Star, MapPin, Search, ShieldCheck, Loader, ChevronLeft, ChevronRight, Award } from 'lucide-react';
 
-const mockInstructors = [
-    { id: 1, userName: "王教练 (Alex Wang)", teachingContent: "首席滑雪顾问", avatarUrl: "https://placehold.co/160x160/e0f2fe/083344/png?text=头像1", experienceYears: 10, rating: 4.9, bio: "拥有超过10年的专业滑雪指导经验，专注于高山滑雪技巧、野雪探险和儿童滑雪教学。", skills: ["CASI 2级", "野雪向导"], locations: ["崇礼万龙", "北京南山"] },
-    { id: 2, userName: "李教练 (Lily Li)", teachingContent: "儿童单板启蒙专家", avatarUrl: "https://placehold.co/160x160/e0f2fe/083344/png?text=头像2", experienceYears: 8, rating: 4.8, bio: "耐心与亲和力是我的标签，尤其擅长引导零基础的儿童和女性学员。", skills: ["NZSIA 1级", "儿童教学专家"], locations: ["松花湖", "北大壶"] },
-    { id: 3, userName: "张教练 (David Zhang)", teachingContent: "自由式技巧大神", avatarUrl: "https://placehold.co/160x160/e0f2fe/083344/png?text=头像3", experienceYears: 12, rating: 5.0, bio: "热衷于挑战极限，精通各类公园道具和跳台动作。如果你想在雪上飞翔，找我没错！", skills: ["CASI 公园1级"], locations: ["亚布力", "可可托海"] },
-    { id: 4, userName: "陈教练 (Sara Chen)", teachingContent: "全能滑行导师", avatarUrl: "https://placehold.co/160x160/e0f2fe/083344/png?text=头像4", experienceYears: 9, rating: 4.9, bio: "无论是刻滑还是小回转，我都能帮你找到最高效、最优美的滑行方式。", skills: ["CASI 1级", "CASI 2级"], locations: ["崇礼万龙", "松花湖"] },
-];
-
-const mockFilters = {
-    locations: ["崇礼万龙", "松花湖", "北大壶", "亚布力", "可可托海"],
-    certifications: ["CASI 1级", "CASI 2级", "NZSIA", "CASI 公园1级", "野雪向导", "儿童教学专家"],
-};
-
-const instructorService = {
-    getAllInstructors: async () => {
-        await new Promise(res => setTimeout(res, 500));
-        return { code: 1, data: mockInstructors };
-    },
-    getFilters: async () => {
-        await new Promise(res => setTimeout(res, 200));
-        return { code: 1, data: mockFilters };
-    }
-};
-
-// ===================================================================================
-// 全局样式 (为了提升可读性，调整了毛玻璃效果和添加了文字阴影)
-// ===================================================================================
 const GlobalStyles = () => (
     <style>{`
         .glass-card {
@@ -52,6 +24,12 @@ const GlobalStyles = () => (
             background-size: 1.5em 1.5em;
             padding-right: 2.5rem;
         }
+        .line-clamp-3 { 
+            overflow: hidden; 
+            display: -webkit-box; 
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 3; 
+        }
     `}</style>
 );
 
@@ -60,11 +38,9 @@ const GlobalStyles = () => (
 // 教练卡片子组件
 // ===================================================================================
 function InstructorCard({ instructor }) {
-    // const navigate = useNavigate();
-
     const handleCardClick = () => {
-        console.log(`Navigating to profile of instructor ID: ${instructor.id}`);
-        // navigate(`/instructor/${instructor.id}`);
+        console.log(`Navigating to profile of instructor ID: ${instructor.userId}`);
+        // 在实际应用中, 你会用 navigate(`/instructor/${instructor.userId}`);
     };
 
     return (
@@ -103,10 +79,11 @@ function InstructorCard({ instructor }) {
                 <div className="mt-4">
                     <h4 className="font-semibold text-gray-800 mb-2 text-shadow">专业认证</h4>
                     <div className="flex flex-wrap gap-2">
-                        {instructor.skills.map((skill, index) => (
-                            <span key={index} className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        {/* 修正: 渲染 skill.displayName 并且使用 skill.id 作为 key */}
+                        {instructor.skills?.map((skill) => (
+                            <span key={skill.id} className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
                                 <ShieldCheck className="w-3 h-3" />
-                                {skill}
+                                {skill.displayName}
                              </span>
                         ))}
                     </div>
@@ -115,7 +92,8 @@ function InstructorCard({ instructor }) {
                 <div className="mt-auto pt-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600 text-shadow">
                         <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <span>{instructor.locations.join(', ')}</span>
+                        {/* 修正: 从地点对象中提取 name 属性进行拼接 */}
+                        <span>{instructor.locations?.map(loc => loc.displayName).join(', ')}</span>
                     </div>
                 </div>
             </div>
@@ -129,41 +107,89 @@ function InstructorCard({ instructor }) {
 // ===================================================================================
 export default function InstructorListPage() {
     // 状态管理
-    const [allInstructors, setAllInstructors] = useState([]);
+    const [instructors, setInstructors] = useState([]);
     const [filters, setFilters] = useState({ locations: [], certifications: [] });
-    const [activeLocation, setActiveLocation] = useState('all');
-    const [activeCertification, setActiveCertification] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [queryParams, setQueryParams] = useState({
+        page: 1,
+        pageSize: 9, // 调整为9，方便3列布局
+        searchTerm: '',
+        locationId: '',
+        certificationId: '',
+    });
+    const [pagination, setPagination] = useState({ total: 0, page: 1, pageSize: 9 });
     const [isLoading, setIsLoading] = useState(true);
 
+    // 【核心修正】: 将useEffect拆分为两个，修正数据获取逻辑
+
+    // Effect 1: 仅在组件首次加载时获取筛选器选项
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchFilters = async () => {
+            try {
+                const [locRes, certRes] = await Promise.all([
+                    instructorService.getAvailableResorts(),
+                    instructorService.getAvailableSkills(),
+                ]);
+
+                // 正确解析后端返回的数据
+                setFilters({
+                    locations: locRes.data || [],
+                    certifications: certRes.data || [],
+                });
+            } catch (error) {
+                console.error("获取筛选条件失败:", error);
+            }
+        };
+
+        fetchFilters();
+    }, []); // 空依赖数组确保此effect只运行一次
+
+    // Effect 2: 仅在queryParams变化时获取教练列表
+    useEffect(() => {
+        const fetchInstructors = async () => {
             setIsLoading(true);
             try {
-                const [instructorsRes, filtersRes] = await Promise.all([
-                    instructorService.getAllInstructors(),
-                    instructorService.getFilters()
-                ]);
-                if (instructorsRes.code === 1) setAllInstructors(instructorsRes.data);
-                if (filtersRes.code === 1) setFilters(filtersRes.data);
+                // 过滤掉空的参数，避免发送空字符串到后端
+                const activeParams = Object.fromEntries(
+                    Object.entries(queryParams).filter(([_, value]) => value !== '' && value !== null)
+                );
+
+                const response = await instructorService.getAllInstructors(activeParams);
+
+                if (response.code === 1 && response.data) {
+                    setInstructors(response.data.records || []);
+                    setPagination({
+                        total: response.data.total,
+                        page: response.data.page,
+                        pageSize: response.data.pageSize,
+                    });
+                } else {
+                    console.error("获取教练列表业务失败:", response.message);
+                    setInstructors([]); // 业务失败时清空列表
+                }
             } catch (error) {
-                console.error("获取页面数据失败:", error);
+                console.error("获取教练列表请求失败:", error);
+                setInstructors([]); // 请求异常时清空列表
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchData();
-    }, []);
 
-    const filteredInstructors = useMemo(() => {
-        return allInstructors.filter(instructor => {
-            const matchesSearchTerm = instructor.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                instructor.teachingContent.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesLocation = activeLocation === 'all' || instructor.locations.includes(activeLocation);
-            const matchesCertification = activeCertification === 'all' || instructor.skills.includes(activeCertification);
-            return matchesSearchTerm && matchesLocation && matchesCertification;
-        });
-    }, [allInstructors, searchTerm, activeLocation, activeCertification]);
+        fetchInstructors();
+    }, [queryParams]); // 这个effect现在只依赖queryParams
+
+
+    const handleFilterChange = (key, value) => {
+        setQueryParams(prev => ({ ...prev, [key]: value, page: 1 }));
+    };
+
+    const handlePageChange = (newPage) => {
+        const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+        if (newPage > 0 && newPage <= totalPages) {
+            setQueryParams(prev => ({ ...prev, page: newPage }));
+        }
+    };
+
+    const totalPages = pagination.total > 0 ? Math.ceil(pagination.total / pagination.pageSize) : 1;
 
 
     return (
@@ -177,66 +203,48 @@ export default function InstructorListPage() {
 
                         <div className="mt-8 max-w-lg mx-auto">
                             <div className="relative">
-                                <input
-                                    type="search"
-                                    placeholder="按教练名称或教学内容搜索..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full p-4 pl-12 rounded-full border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                                />
+                                <input type="search" placeholder="按教练名称或教学内容搜索..." value={queryParams.searchTerm} onChange={(e) => handleFilterChange('searchTerm', e.target.value)} className="w-full p-4 pl-12 rounded-full border border-gray-300 focus:ring-blue-500 focus:border-blue-500 shadow-sm"/>
                                 <Search className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
                             </div>
                         </div>
 
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                            <div>
-                                <label htmlFor="location-filter" className="sr-only">按地点筛选</label>
-                                <select
-                                    id="location-filter"
-                                    value={activeLocation}
-                                    onChange={(e) => setActiveLocation(e.target.value)}
-                                    className="filter-select w-full p-3 rounded-full border border-gray-300 bg-white/70 backdrop-blur-sm shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                    <option value="all">所有地点</option>
-                                    {filters.locations.map(loc => (
-                                        <option key={loc} value={loc}>{loc}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="cert-filter" className="sr-only">按认证筛选</label>
-                                <select
-                                    id="cert-filter"
-                                    value={activeCertification}
-                                    onChange={(e) => setActiveCertification(e.target.value)}
-                                    className="filter-select w-full p-3 rounded-full border border-gray-300 bg-white/70 backdrop-blur-sm shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                >
-                                    <option value="all">所有认证</option>
-                                    {filters.certifications.map(cert => (
-                                        <option key={cert} value={cert}>{cert}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <select id="location-filter" value={queryParams.locationId} onChange={(e) => handleFilterChange('locationId', e.target.value)} className="filter-select w-full p-3 rounded-full border border-gray-300 bg-white/70 backdrop-blur-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">所有地点</option>
+                                {filters.locations.map(loc => (<option key={loc.id} value={loc.id}>{loc.name}</option>))}
+                            </select>
+                            <select id="cert-filter" value={queryParams.certificationId} onChange={(e) => handleFilterChange('certificationId', e.target.value)} className="filter-select w-full p-3 rounded-full border border-gray-300 bg-white/70 backdrop-blur-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">所有认证</option>
+                                {/* 修正: 渲染cert.name */}
+                                {filters.certifications.map(cert => (<option key={cert.id} value={cert.id}>{cert.displayName}</option>))}
+                            </select>
                         </div>
                     </div>
 
                     {isLoading ? (
-                        <div className="text-center py-10"><p className="text-gray-700">正在加载教练列表...</p></div>
+                        <div className="text-center py-10 flex justify-center items-center gap-3"><Loader className="animate-spin text-blue-500" /><p className="text-gray-700">正在加载教练列表...</p></div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                            {filteredInstructors.map(instructor => (
-                                <InstructorCard key={instructor.id} instructor={instructor} />
-                            ))}
-                        </div>
-                    )}
-                    {!isLoading && filteredInstructors.length === 0 && (
-                        <div className="text-center py-10 bg-white/70 backdrop-blur-sm rounded-xl">
-                            <p className="text-gray-700 font-semibold">没有找到符合条件的教练。</p>
-                        </div>
+                        <>
+                            {instructors.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                    {/* 修正: key 使用 instructor.userId */}
+                                    {instructors.map(instructor => ( <InstructorCard key={instructor.userId} instructor={instructor} /> ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-10 bg-white/70 backdrop-blur-sm rounded-xl"><p className="text-gray-700 font-semibold">没有找到符合条件的教练。</p></div>
+                            )}
+
+                            {pagination.total > pagination.pageSize && (
+                                <div className="mt-12 flex justify-center items-center gap-4">
+                                    <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page <= 1} className="p-2 rounded-full bg-white/70 backdrop-blur-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft /></button>
+                                    <span className="font-semibold text-gray-700">第 {pagination.page} / {totalPages} 页</span>
+                                    <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page >= totalPages} className="p-2 rounded-full bg-white/70 backdrop-blur-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"><ChevronRight /></button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
         </>
     );
 }
-

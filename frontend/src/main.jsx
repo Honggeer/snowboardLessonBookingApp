@@ -34,6 +34,10 @@ const router = createBrowserRouter([
                         path: '/instructorProfile',
                         element: <InstructorProfilePage />,
                     },
+                    {
+                        path: '/instructorList',
+                        element: <InstructorListPage />,
+                    },
 
                     // 未来可以添加更多受保护的页面，比如 /profile, /settings 等
                 ] // 显示LoginPage组件
@@ -43,10 +47,7 @@ const router = createBrowserRouter([
                 path: '/register',
                 element: <RegisterPage />,
             },
-            {
-                path: '/instructorList',
-                element: <InstructorListPage />, //todo: should be protected
-            },
+
             {
                 path: '/InstructorRegister',
                 element: <InstructorRegisterPage />,

@@ -39,12 +39,29 @@ const updateProfile = async (profileData) => {
 const  addSkillCertification = async (formData)=> {
     return axiosInstance.post('/api/instructors/me/skills', formData)
 };
+const getAllInstructors = async (params) => {
+    try {
+
+        const response = await axiosInstance.get(`api/student/instructors`, {params});
+        if (response.data && response.data.code === 1) {
+            return response.data;
+        } else {
+            // 如果后端返回的code不是1，也抛出一个错误
+            throw new Error(response.data.message || '获取教练列表失败');
+        }
+    } catch (error) {
+        // 错误处理：打印错误信息到控制台，并向上抛出异常
+        console.error('获取教练列表失败:', error);
+        throw error;
+    }
+};
 
 // 导出这些函数，以便在你的组件中使用
 export const instructorService = {
     getProfile,
     updateProfile,
     addSkillCertification,
+    getAllInstructors,
     getAvailableResorts: async () => axiosInstance.get('api/locations').then(res => res.data),
     updateMyLocations: async (locationUpdateDTO) => axiosInstance.put('api/instructors/me/locations', locationUpdateDTO).then(res => res.data),
     // 新增: 获取所有可选技能的API

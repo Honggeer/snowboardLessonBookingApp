@@ -19,4 +19,11 @@
                  JOIN ski_resorts sr ON il.resort_id = sr.id
         WHERE il.instructor_id = #{instructorId}
     </select>
+    <select id="findLocationsByInstructorId"
+            resultType="com.geer.snowboard_lesson_booking.vo.InstructorLocationVO">
+        SELECT sr.name as displayName, il.resort_id as id, il.instructor_id, sr.website_url, sr.region
+        FROM instructor_locations il
+                 JOIN ski_resorts sr ON il.resort_id = sr.id
+        WHERE il.instructor_id = #{instructorId}
+    </select>
 </mapper>

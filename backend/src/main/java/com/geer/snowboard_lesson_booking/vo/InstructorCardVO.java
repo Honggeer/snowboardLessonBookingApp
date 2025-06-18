@@ -18,7 +18,7 @@ public class InstructorCardVO {
     //private Double rating; todo: rating system
     private String teachingContent;
     private List<InstructorSkillVO> skills;
-    private List<String> locations;
+    private List<InstructorLocationVO> locations;
 
 }
 

@@ -43,7 +43,7 @@ export default function LoginPage() {
                         break;
                     case 'STUDENT':
                         // 如果是学生，跳转到学生仪表盘或其他学生页面
-                        navigate('/dashboard');
+                        navigate('/instructorList');
                         break;
                     default:
                         // 如果角色未知或没有角色，跳转到一个默认的主页

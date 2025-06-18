@@ -1,6 +1,7 @@
 package com.geer.snowboard_lesson_booking.mapper;
 
 import com.geer.snowboard_lesson_booking.entity.InstructorLocation;
+import com.geer.snowboard_lesson_booking.vo.InstructorLocationVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface InstructorLocationMapper {
 
     void insertBatch(List<InstructorLocation> locations);
     List<String> findLocationNamesByInstructorId(Long instructorId);
+    List<InstructorLocationVO> findLocationsByInstructorId(Long instructorId);
 }

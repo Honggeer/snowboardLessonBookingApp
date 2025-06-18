@@ -11,6 +11,7 @@ import com.geer.snowboard_lesson_booking.result.PageResult;
 import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.utils.BaseContext;
 import com.geer.snowboard_lesson_booking.vo.InstructorCardVO;
+import com.geer.snowboard_lesson_booking.vo.InstructorLocationVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
 import com.github.pagehelper.PageHelper;
@@ -140,7 +141,7 @@ public class InstructorServiceImpl implements InstructorService {
             card.setSkills(skills != null ? skills : new ArrayList<>());
 
             // 2b. 为每个教练查询其地点列表
-            List<String> locations = instructorLocationMapper.findLocationNamesByInstructorId(card.getUserId());
+            List<InstructorLocationVO> locations = instructorLocationMapper.findLocationsByInstructorId(card.getUserId());
             card.setLocations(locations != null ? locations : new ArrayList<>());
         }
         PageInfo<InstructorCardVO> pageInfo = new PageInfo<>(instructorCardVOS);
