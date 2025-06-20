@@ -17,5 +17,6 @@ public interface InstructorSkillMapper {
     void insertBatch(List<InstructorSkill> skills);
     void insert(InstructorSkill skill);
     List<InstructorSkillVO> findSkillsByInstructorId(Long instructorId);
+    List<InstructorSkillVO> findApprovedSkillsByInstructorId(Long instructorId);
     void deleteById(Long id);
 }

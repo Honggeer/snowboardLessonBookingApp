@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import backgroundImageUrl from '../assets/profileBG.png';
+import { useNavigate } from 'react-router-dom';
 import {instructorService} from "../api/instructorService.js";
 import { Star, MapPin, Search, ShieldCheck, Loader, ChevronLeft, ChevronRight, Award } from 'lucide-react';
 
@@ -38,9 +39,11 @@ const GlobalStyles = () => (
 // 教练卡片子组件
 // ===================================================================================
 function InstructorCard({ instructor }) {
+    const navigate = useNavigate();
     const handleCardClick = () => {
-        console.log(`Navigating to profile of instructor ID: ${instructor.userId}`);
-        // 在实际应用中, 你会用 navigate(`/instructor/${instructor.userId}`);
+
+        navigate(`/instructors/${instructor.userId}`);
+
     };
 
     return (

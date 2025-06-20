@@ -19,7 +19,22 @@ const getProfile = async () => {
         throw error;
     }
 };
+const getInstructorDetail = async (id) => {
+    try {
 
+        const response = await axiosInstance.get(`/api/student/instructor/${id}`);
+        if (response.data && response.data.code === 1) {
+            return response.data.data; // <--- 成功时，直接返回最内层的数据
+        } else {
+            // 业务失败时，主动抛出错误
+            throw new Error(response.data.msg || '获取教练详情失败');
+        }
+    } catch (error) {
+        // 错误处理：打印错误信息到控制台，并向上抛出异常
+        console.error(`获取教练ID ${id} 的详情失败:`, error);
+        throw error;
+    }
+};
 /**
  * 更新当前登录教练的个人资料
  * @param {Object} profileData - 包含更新后信息的教练资料对象
@@ -55,6 +70,20 @@ const getAllInstructors = async (params) => {
         throw error;
     }
 };
+const getInstructorAvailability = async (instructorId, date)=> {
+    try {
+        const response = await axiosInstance.get(
+            // 注意这里的URL，它匹配我们后端 StudentController 中的新接口
+            `/api/student/instructor/${instructorId}/availabilities`,
+            { params: { date } }
+        );
+        // 直接返回后端 Result<T> 中的 data 部分
+        return response.data.data;
+    } catch (error) {
+        console.error(`获取教练ID ${instructorId} 在 ${date} 的可用时间失败:`, error);
+        throw error;
+    }
+};
 
 // 导出这些函数，以便在你的组件中使用
 export const instructorService = {
@@ -62,6 +91,8 @@ export const instructorService = {
     updateProfile,
     addSkillCertification,
     getAllInstructors,
+    getInstructorAvailability,
+    getInstructorDetail,
     getAvailableResorts: async () => axiosInstance.get('api/locations').then(res => res.data),
     updateMyLocations: async (locationUpdateDTO) => axiosInstance.put('api/instructors/me/locations', locationUpdateDTO).then(res => res.data),
     // 新增: 获取所有可选技能的API

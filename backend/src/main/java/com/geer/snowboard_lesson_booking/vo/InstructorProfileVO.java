@@ -19,10 +19,7 @@ public class InstructorProfileVO implements Serializable {
     private Integer experienceYears;
     private String bio;
     private String teachingContent;
-
-    // 来自 instructor_skills 和 skill_types 表 (未来组合查询)
     private List<InstructorSkillVO> skills;
 
-    // 来自 instructor_locations 和 ski_resorts 表 (未来组合查询)
-    private List<String> locations;
+    private List<InstructorLocationVO> locations;
 }

@@ -389,7 +389,7 @@ export default function InstructorProfilePage() {
                                 <button onClick={() => setIsEditLocationsModalOpen(true)} className="action-btn text-sm font-semibold py-2 px-4 rounded-full flex items-center gap-2 transition-colors"><Edit3 size={16} /> 编辑地点</button>
                             </div>
                             <div className="flex flex-wrap gap-3">
-                                {profileData?.locations?.map((loc, index) => <span key={`${loc}-${index}`} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full">{loc}</span>)}
+                                {profileData?.locations?.map((loc, index) => <span key={`${loc}-${index}`} className="tag-base text-blue-300 font-medium py-2 px-4 rounded-full">{loc.displayName}</span>)}
                             </div>
                         </div>
                         <div className="mt-10"><h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2"><Contact size={20} className="text-gray-400" />联系方式</h2><div className="space-y-3"><div className="flex items-center gap-4 text-gray-300"><Mail size={20} className="text-gray-400" /><span>{profileData?.email}</span></div><div className="flex items-center gap-4 text-gray-300"><Phone size={20} className="text-gray-400" /><span>{profileData?.phoneNumber}</span></div></div></div>

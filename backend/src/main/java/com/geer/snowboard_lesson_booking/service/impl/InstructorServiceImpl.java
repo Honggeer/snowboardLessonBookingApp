@@ -1,19 +1,15 @@
 package com.geer.snowboard_lesson_booking.service.impl;
 
-import com.geer.snowboard_lesson_booking.dto.InstructorProfileUpdateDTO;
-import com.geer.snowboard_lesson_booking.dto.InstructorQueryDTO;
-import com.geer.snowboard_lesson_booking.dto.LocationUpdateDTO;
-import com.geer.snowboard_lesson_booking.dto.SkillAddDTO;
+import com.geer.snowboard_lesson_booking.dto.*;
 import com.geer.snowboard_lesson_booking.entity.*;
+import com.geer.snowboard_lesson_booking.exception.OperationFailedException;
+import com.geer.snowboard_lesson_booking.exception.PermissionDeniedException;
 import com.geer.snowboard_lesson_booking.exception.RegistrationFailedException;
 import com.geer.snowboard_lesson_booking.mapper.*;
 import com.geer.snowboard_lesson_booking.result.PageResult;
 import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.utils.BaseContext;
-import com.geer.snowboard_lesson_booking.vo.InstructorCardVO;
-import com.geer.snowboard_lesson_booking.vo.InstructorLocationVO;
-import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
-import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
+import com.geer.snowboard_lesson_booking.vo.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +45,12 @@ public class InstructorServiceImpl implements InstructorService {
     private InstructorLocationMapper instructorLocationMapper;
     @Autowired
     private InstructorMapper instructorMapper;
+    @Autowired
+    private AvailabilityMapper availabilityMapper;
+    @Autowired
+    private LocationMapper locationMapper;
+    @Autowired
+    private BookingMapper bookingMapper;
 
     @Override
     public InstructorProfileVO getMyProfile() {
@@ -55,7 +63,7 @@ public class InstructorServiceImpl implements InstructorService {
         if(instructorProfile!=null){
             BeanUtils.copyProperties(instructorProfile,instructorProfileVO);
         }
-        List<String> locations = instructorLocationMapper.findLocationNamesByInstructorId(currentUserId);
+        List<InstructorLocationVO> locations = instructorLocationMapper.findLocationsByInstructorId(currentUserId);
         instructorProfileVO.setSkills(skills);
         instructorProfileVO.setLocations(locations);
         return instructorProfileVO;
@@ -153,6 +161,126 @@ public class InstructorServiceImpl implements InstructorService {
         );
     }
 
+    @Override
+    public InstructorProfileVO getInstructorDetailById(Long id) {
+        User user = userMapper.findById(id);
+        InstructorProfile instructorProfile = instructorProfileMapper.findByUserId(id);
+        List<InstructorSkillVO> skills = instructorSkillMapper.findApprovedSkillsByInstructorId(id);
+        InstructorProfileVO instructorProfileVO = new InstructorProfileVO();
+        BeanUtils.copyProperties(user,instructorProfileVO);
+        if(instructorProfile!=null){
+            BeanUtils.copyProperties(instructorProfile,instructorProfileVO);
+        }
+        List<InstructorLocationVO> locations = instructorLocationMapper.findLocationsByInstructorId(id);
+        instructorProfileVO.setSkills(skills);
+        instructorProfileVO.setLocations(locations);
+        return instructorProfileVO;
+    }
+    public DailyAvailabilityVO getDailyAvailability(Long instructorId, LocalDate date) {
+
+
+        // 1. 确定一天的开始和结束时间
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        // 2. 调用修改后的Mapper方法，一次性获取所有时间段及其预订状态
+        List<AvailabilityInfoVO> availabilityInfos = availabilityMapper.findByInstructorIdAndDate(instructorId, startOfDay, endOfDay);
+
+        // 3. 寻找第一个被预订的时间段，以确定锁定的雪场
+        DailyAvailabilityVO.LockedInResortInfo lockedInResort = availabilityInfos.stream()
+                .filter(info -> info.getBookingId() != null && info.getResortId() != null) // 筛选出已被预订且有关联雪场的记录
+                .findFirst() // 找到第一个
+                .map(info -> {
+                    // 根据 resortId 查询雪场名称
+                    Location location = locationMapper.findById(info.getResortId());
+                    return new DailyAvailabilityVO.LockedInResortInfo(location.getId(), location.getName());
+                })
+                .orElse(null); // 如果当天没有预订，则为 null
+
+        // 4. 筛选出所有未被预订的时间段
+        List<DailyAvailabilityVO.AvailabilitySlot> availableSlots = availabilityInfos.stream()
+                .filter(info -> info.getBookingId() == null) // bookingId 为 null 的就是未预订的
+                .map(info -> new DailyAvailabilityVO.AvailabilitySlot(
+                        info.getId(),
+                        info.getStartTime(),
+                        info.getEndTime(),
+                        info.getResortId()
+                ))
+                .collect(Collectors.toList());
+
+        // 5. 组装最终的VO并返回
+        return new DailyAvailabilityVO(lockedInResort, availableSlots);
+    }
+    @Override
+    @Transactional
+    public void createAvailabilities(AvailabilitiesCreateDTO dto) {
+        validateSkiSeason(dto.getStartDate(),dto.getEndDate());
+        Long instructorId = BaseContext.getCurrentId();
+        List<Availability> availabilitiesToInsert = new ArrayList<>();
+
+        // 从开始日期循环到结束日期
+        for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
+            // 检查当天是否在指定的星期列表中
+            List<DayOfWeek> daysOfWeek = dto.getDaysOfWeek();
+            if (daysOfWeek != null && !daysOfWeek.isEmpty() && !daysOfWeek.contains(date.getDayOfWeek())) {
+                continue; // 如果不包含，则跳过当天
+            }
+
+            // 以2小时为步长，生成时间段
+            final int DURATION_HOURS = 2;
+            for (LocalTime time = dto.getStartTime(); time.isBefore(dto.getEndTime()); time = time.plusHours(DURATION_HOURS)) {
+                Availability availability = new Availability();
+                availability.setInstructorId(instructorId);
+                availability.setResortId(dto.getResortId());
+                availability.setStartTime(LocalDateTime.of(date, time));
+                availability.setEndTime(LocalDateTime.of(date, time.plusHours(DURATION_HOURS)));
+                availability.setNotes(dto.getNotes());
+                availabilitiesToInsert.add(availability);
+            }
+        }
+
+        // 如果有任何可插入的时间段，则执行批量插入
+        if (!availabilitiesToInsert.isEmpty()) {
+            availabilityMapper.insertBatch(availabilitiesToInsert);
+            log.info("为教练ID: {} 成功批量创建了 {} 个可用时间段。", instructorId, availabilitiesToInsert.size());
+        }
+    }
+    @Override
+    public void deleteAvailability(Long availabilityId) {
+        Long instructorId = BaseContext.getCurrentId();
+
+        // 1. 安全检查：确认该时间段存在且属于当前登录的教练
+        Availability availability = availabilityMapper.findById(availabilityId);
+        if (availability == null || !Objects.equals(availability.getInstructorId(), instructorId)) {
+            throw new PermissionDeniedException("无权操作或时间段不存在");
+        }
+
+        // 2. 安全检查：确认该时间段未被任何学员预订
+        int bookingCount = bookingMapper.countByAvailabilityId(availabilityId);
+        if (bookingCount > 0) {
+            throw new OperationFailedException("无法删除，该时间段已被预订");
+        }
+        // 3. 执行删除
+        availabilityMapper.deleteById(availabilityId);
+        log.info("教练ID: {} 成功删除了可用时间段ID: {}", instructorId, availabilityId);
+    }
+    @Override
+    public void deleteAvailabilityByDate(LocalDate date){
+        Long instructorId = BaseContext.getCurrentId();
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+        List<AvailabilityInfoVO> availabilityInfos = availabilityMapper.findByInstructorIdAndDate(instructorId,startOfDay,endOfDay);
+        List<Long> idsToDelete = availabilityInfos.stream()
+                .filter(info -> info.getBookingId() == null) // bookingId 为 null 的就是未预订的
+                .map(AvailabilityInfoVO::getId)
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(idsToDelete)) {
+            availabilityMapper.deleteBatchByIds(idsToDelete);
+            log.info("成功清空了教练ID: {} 在日期 {} 的 {} 个未预订时间段。", instructorId, date, idsToDelete.size());
+        } else {
+            log.info("教练ID: {} 在日期 {} 没有需要清空的未预订时间段。", instructorId, date);
+        }
+    }
     private boolean hasInstructorProfileUpdates(InstructorProfileUpdateDTO dto) {
         return StringUtils.hasText(dto.getAvatarUrl()) ||
                 dto.getExperienceYears() != null ||
@@ -162,5 +290,23 @@ public class InstructorServiceImpl implements InstructorService {
     private boolean hasUserUpdates(InstructorProfileUpdateDTO dto) {
         return StringUtils.hasText(dto.getUserName()) ||
                 StringUtils.hasText(dto.getPhoneNumber());
+    }
+    private void validateSkiSeason(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new OperationFailedException("开始日期和结束日期不能为空。");
+        }
+        if(startDate.isAfter(endDate)){
+            throw new OperationFailedException("结束日期不能早于开始日期。");
+        }
+        // 遍历所选范围内的每一个月，确保都在雪季内
+        LocalDate cursor = startDate.withDayOfMonth(1);
+        while (!cursor.isAfter(endDate)) {
+            int month = cursor.getMonthValue();
+            // 休雪季为 6月 (June) 到 10月 (October)
+            if (month >= 6 && month <= 10) {
+                throw new OperationFailedException("创建失败：时间范围不能包含休雪季（6月到10月），请重新选择。");
+            }
+            cursor = cursor.plusMonths(1);
+        }
     }
 }

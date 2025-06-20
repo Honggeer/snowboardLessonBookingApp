@@ -37,5 +37,23 @@
         ORDER BY
             isk.submitted_at DESC
     </select>
+    <select id="findApprovedSkillsByInstructorId"
+            resultType="com.geer.snowboard_lesson_booking.vo.InstructorSkillVO">
+        SELECT
+            st.display_name as displayName,
+            isk.id as id,
+            isk.certificate_url as certificateUrl,
+            isk.status,
+            isk.submitted_at as submittedAt,
+            isk.approved_at as approvedAt
+        FROM
+            instructor_skills isk
+                JOIN
+            skill_types st ON isk.skill_type_id = st.id
+        WHERE
+            isk.instructor_id = #{instructorId} AND isk.status = 'APPROVED'
+        ORDER BY
+            isk.submitted_at DESC
+    </select>
 
 </mapper>

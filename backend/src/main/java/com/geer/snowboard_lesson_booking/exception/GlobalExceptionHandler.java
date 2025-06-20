@@ -22,7 +22,19 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(MultipartException.class)
     public Result<Object> handleMultipartException(MultipartException ex) {
-        log.error("文件上传大小超出限制: {}", ex.getMessage());
+        log.error("File is larger than 5mb: {}", ex.getMessage());
         return Result.error("文件大小超出限制，请上传小于5MB的图片。");
+    }
+    @ExceptionHandler(PermissionDeniedException.class)
+    public Result<Object> handlePermissionDeniedException(PermissionDeniedException ex){
+        log.error("Permission denied: {}", ex.getMessage());
+        return Result.error(ex.getMessage());
+
+    }
+    @ExceptionHandler(OperationFailedException.class)
+    public Result<Object> handleOperationFailedExceptionException(OperationFailedException ex){
+        log.error("Permission denied: {}", ex.getMessage());
+        return Result.error(ex.getMessage());
+
     }
 }

@@ -1,18 +1,24 @@
 package com.geer.snowboard_lesson_booking.controller;
 
+import com.geer.snowboard_lesson_booking.dto.AvailabilitiesCreateDTO;
 import com.geer.snowboard_lesson_booking.dto.InstructorProfileUpdateDTO;
 import com.geer.snowboard_lesson_booking.dto.LocationUpdateDTO;
 import com.geer.snowboard_lesson_booking.dto.SkillAddDTO;
 import com.geer.snowboard_lesson_booking.result.Result;
 import com.geer.snowboard_lesson_booking.service.InstructorService;
+import com.geer.snowboard_lesson_booking.utils.BaseContext;
+import com.geer.snowboard_lesson_booking.vo.DailyAvailabilityVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorProfileVO;
 import com.geer.snowboard_lesson_booking.vo.InstructorSkillVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/instructors/me")
@@ -62,4 +68,31 @@ public class InstructorController {
         instructorService.deleteMySkillById(skillId);
         return Result.success();
     }
+    @PostMapping("/availabilities")
+    public Result<String> createAvailabilities(@RequestBody AvailabilitiesCreateDTO availabilitiesCreateDTO) {
+        log.info("Instructor creating availabilities: {}", availabilitiesCreateDTO);
+        instructorService.createAvailabilities(availabilitiesCreateDTO);
+        return Result.success();
+    }
+    @GetMapping("/availabilities")
+    public Result<DailyAvailabilityVO> getMyAvailabilitiesByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Long instructorId = BaseContext.getCurrentId();
+        log.info("Searching instructors {} availabilities on {}", (Object) instructorId, Optional.ofNullable(date));
+
+        DailyAvailabilityVO dailyAvailability = instructorService.getDailyAvailability(instructorId, date);
+        return Result.success(dailyAvailability);
+    }
+    @DeleteMapping("/availabilities/{availabilityId}")
+    public Result<String> deleteAvailability(@PathVariable Long availabilityId) {
+        log.info("Instructor is deleting the availability: {}", availabilityId);
+        instructorService.deleteAvailability(availabilityId);
+        return Result.success();
+    }
+    @DeleteMapping("/availabilities")
+    public Result<String> deleteAvailabilityByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        log.info("Instructor is deleting the availability of the day: {}", date);
+        instructorService.deleteAvailabilityByDate(date);
+        return Result.success();
+    }
+
 }

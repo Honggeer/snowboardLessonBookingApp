@@ -9,7 +9,6 @@ const ProtectedRoute = () => {
         // 如果没有token，重定向到登录页面
         return <Navigate to="/login" replace />;
     }
-
     // 如果有token，则渲染子路由（即受保护的页面）
     return <Outlet />;
 };
