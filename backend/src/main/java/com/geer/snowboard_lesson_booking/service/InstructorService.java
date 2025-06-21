@@ -27,4 +27,6 @@ public interface InstructorService {
     public void deleteAvailability(Long availabilityId);
 
     void deleteAvailabilityByDate(LocalDate date);
+    void deleteAllMyAvailabilities();
+
 }

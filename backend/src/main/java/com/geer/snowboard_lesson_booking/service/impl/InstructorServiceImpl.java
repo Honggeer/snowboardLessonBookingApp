@@ -214,35 +214,46 @@ public class InstructorServiceImpl implements InstructorService {
     @Override
     @Transactional
     public void createAvailabilities(AvailabilitiesCreateDTO dto) {
-        validateSkiSeason(dto.getStartDate(),dto.getEndDate());
+        validateSkiSeason(dto.getStartDate(), dto.getEndDate());
         Long instructorId = BaseContext.getCurrentId();
-        List<Availability> availabilitiesToInsert = new ArrayList<>();
 
-        // 从开始日期循环到结束日期
+        // 1. 【核心改动】先删除，为覆盖做准备
+        // 遍历指定的时间范围
         for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
-            // 检查当天是否在指定的星期列表中
+            // 如果当天符合星期条件，则调用“按天删除”的逻辑，清空当天的旧安排
+            List<DayOfWeek> daysOfWeek = dto.getDaysOfWeek();
+            if (daysOfWeek == null || daysOfWeek.isEmpty() || daysOfWeek.contains(date.getDayOfWeek())) {
+                this.deleteAvailabilityByDate(date);
+            }
+        }
+
+
+        List<Availability> availabilitiesToInsert = new ArrayList<>();
+        final int DURATION_HOURS = 2;
+
+        for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
             List<DayOfWeek> daysOfWeek = dto.getDaysOfWeek();
             if (daysOfWeek != null && !daysOfWeek.isEmpty() && !daysOfWeek.contains(date.getDayOfWeek())) {
-                continue; // 如果不包含，则跳过当天
+                continue;
             }
 
-            // 以2小时为步长，生成时间段
-            final int DURATION_HOURS = 2;
             for (LocalTime time = dto.getStartTime(); time.isBefore(dto.getEndTime()); time = time.plusHours(DURATION_HOURS)) {
+                LocalTime slotEndTime = time.plusHours(DURATION_HOURS);
+                if (slotEndTime.isAfter(dto.getEndTime())) continue;
+
                 Availability availability = new Availability();
                 availability.setInstructorId(instructorId);
                 availability.setResortId(dto.getResortId());
                 availability.setStartTime(LocalDateTime.of(date, time));
-                availability.setEndTime(LocalDateTime.of(date, time.plusHours(DURATION_HOURS)));
+                availability.setEndTime(LocalDateTime.of(date, slotEndTime));
                 availability.setNotes(dto.getNotes());
                 availabilitiesToInsert.add(availability);
             }
         }
 
-        // 如果有任何可插入的时间段，则执行批量插入
         if (!availabilitiesToInsert.isEmpty()) {
             availabilityMapper.insertBatch(availabilitiesToInsert);
-            log.info("为教练ID: {} 成功批量创建了 {} 个可用时间段。", instructorId, availabilitiesToInsert.size());
+            log.info("为教练ID: {} 成功覆盖并创建了 {} 个新的可用时间段。", instructorId, availabilitiesToInsert.size());
         }
     }
     @Override
@@ -263,6 +274,11 @@ public class InstructorServiceImpl implements InstructorService {
         // 3. 执行删除
         availabilityMapper.deleteById(availabilityId);
         log.info("教练ID: {} 成功删除了可用时间段ID: {}", instructorId, availabilityId);
+    }
+    @Override
+    public void deleteAllMyAvailabilities(){
+        Long instructorId = BaseContext.getCurrentId();
+        availabilityMapper.deleteAllUnbookedByInstructorId(instructorId);
     }
     @Override
     public void deleteAvailabilityByDate(LocalDate date){

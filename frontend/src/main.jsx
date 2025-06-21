@@ -12,6 +12,7 @@ import InstructorRegisterPage from "./views/InstructorRegisterPage.jsx";
 import InstructorProfilePage from "./views/InstructorProfilePage.jsx";
 import InstructorListPage from "./views/InstructorListPage.jsx"; // 导入Tailwind样式
 import InstructorDetailPage from "./views/InstructorDetailPage.jsx";
+import AvailabilityManagementPage from "./views/AvailabilityManagementPage.jsx";
 // 创建路由配置
 const router = createBrowserRouter([
     {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
                         path: '/instructors/:id',
                         element: <InstructorDetailPage/>,
                     },
+                    {
+                        path: '/instructor/schedule',
+                        element: <AvailabilityManagementPage />
+                    }
 
                     // 未来可以添加更多受保护的页面，比如 /profile, /settings 等
                 ] // 显示LoginPage组件

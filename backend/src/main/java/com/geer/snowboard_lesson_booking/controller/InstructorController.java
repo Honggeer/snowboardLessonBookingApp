@@ -94,5 +94,11 @@ public class InstructorController {
         instructorService.deleteAvailabilityByDate(date);
         return Result.success();
     }
+    @DeleteMapping("/availabilities/all")
+    public Result deleteAllMyAvailabilities() {
+        log.info("教练正在请求一键清空所有可用时间。");
+        instructorService.deleteAllMyAvailabilities();
+        return Result.success();
+    }
 
 }

@@ -16,4 +16,5 @@ public interface AvailabilityMapper {
     Availability findById(Long id);
 
     void deleteBatchByIds(List<Long> idsToDelete);
+    int deleteAllUnbookedByInstructorId(Long instructorId);
 }

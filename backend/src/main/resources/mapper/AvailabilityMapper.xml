@@ -20,6 +20,11 @@
             #{id}
         </foreach>
     </delete>
+    <delete id="deleteAllUnbookedByInstructorId">
+        DELETE FROM availabilities
+        WHERE instructor_id = #{instructorId}
+          AND id NOT IN (SELECT DISTINCT availability_id FROM bookings)
+    </delete>
 
     <!--
       【新增】根据ID查询的语句。
