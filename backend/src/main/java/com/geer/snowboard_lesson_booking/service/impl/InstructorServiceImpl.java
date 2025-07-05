@@ -221,10 +221,7 @@ public class InstructorServiceImpl implements InstructorService {
         // 遍历指定的时间范围
         for (LocalDate date = dto.getStartDate(); !date.isAfter(dto.getEndDate()); date = date.plusDays(1)) {
             // 如果当天符合星期条件，则调用“按天删除”的逻辑，清空当天的旧安排
-            List<DayOfWeek> daysOfWeek = dto.getDaysOfWeek();
-            if (daysOfWeek == null || daysOfWeek.isEmpty() || daysOfWeek.contains(date.getDayOfWeek())) {
-                this.deleteAvailabilityByDate(date);
-            }
+            deleteAvailabilityByDate(date);
         }
 
 
