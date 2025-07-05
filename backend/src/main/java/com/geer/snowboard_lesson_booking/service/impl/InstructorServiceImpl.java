@@ -51,7 +51,10 @@ public class InstructorServiceImpl implements InstructorService {
     private LocationMapper locationMapper;
     @Autowired
     private BookingMapper bookingMapper;
-
+    @Autowired
+    private LessonTemplateMapper lessonTemplateMapper;
+    @Autowired
+    private LessonPricingMapper lessonPricingMapper;
     @Override
     public InstructorProfileVO getMyProfile() {
         Long currentUserId = BaseContext.getCurrentId();
@@ -277,6 +280,8 @@ public class InstructorServiceImpl implements InstructorService {
         Long instructorId = BaseContext.getCurrentId();
         availabilityMapper.deleteAllUnbookedByInstructorId(instructorId);
     }
+
+
     @Override
     public void deleteAvailabilityByDate(LocalDate date){
         Long instructorId = BaseContext.getCurrentId();
@@ -322,4 +327,36 @@ public class InstructorServiceImpl implements InstructorService {
             cursor = cursor.plusMonths(1);
         }
     }
+    @Override
+    public void createLesson(LessonCreateDTO lessonCreateDTO) {
+        Long instructorId = BaseContext.getCurrentId();
+
+        // 1. 创建并插入课程模板主体
+        LessonTemplate lessonTemplate = new LessonTemplate();
+        BeanUtils.copyProperties(lessonCreateDTO, lessonTemplate);
+        lessonTemplate.setInstructorId(instructorId);
+
+        lessonTemplateMapper.insert(lessonTemplate);
+
+        // 2. 获取上一步操作中自动生成的主键ID
+        Long lessonTemplateId = lessonTemplate.getId();
+        log.info("Instructor id: {} created new lesson template，ID: {}", instructorId, lessonTemplateId);
+
+        // 3. 准备并批量插入定价信息
+        List<LessonCreateDTO.PricingDTO> pricingsDTO = lessonCreateDTO.getPricings();
+        if (!CollectionUtils.isEmpty(pricingsDTO)) {
+            List<LessonPricing> lessonPricings = pricingsDTO.stream().map(dto -> {
+                LessonPricing pricing = new LessonPricing();
+                BeanUtils.copyProperties(dto, pricing);
+                // 关联到刚刚创建的课程模板ID
+                pricing.setLessonTemplateId(lessonTemplateId);
+                return pricing;
+            }).collect(Collectors.toList());
+
+            // 批量插入
+            lessonPricingMapper.insertBatch(lessonPricings);
+            log.info("Lesson template ID: {} inserted {} records。", lessonTemplateId, lessonPricings.size());
+        }
+    }
+
 }

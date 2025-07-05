@@ -28,5 +28,6 @@ public interface InstructorService {
 
     void deleteAvailabilityByDate(LocalDate date);
     void deleteAllMyAvailabilities();
+    void createLesson(LessonCreateDTO lessonCreateDTO);
 
 }

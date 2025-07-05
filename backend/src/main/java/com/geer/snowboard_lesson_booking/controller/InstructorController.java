@@ -1,9 +1,6 @@
 package com.geer.snowboard_lesson_booking.controller;
 
-import com.geer.snowboard_lesson_booking.dto.AvailabilitiesCreateDTO;
-import com.geer.snowboard_lesson_booking.dto.InstructorProfileUpdateDTO;
-import com.geer.snowboard_lesson_booking.dto.LocationUpdateDTO;
-import com.geer.snowboard_lesson_booking.dto.SkillAddDTO;
+import com.geer.snowboard_lesson_booking.dto.*;
 import com.geer.snowboard_lesson_booking.result.Result;
 import com.geer.snowboard_lesson_booking.service.InstructorService;
 import com.geer.snowboard_lesson_booking.utils.BaseContext;
@@ -95,9 +92,15 @@ public class InstructorController {
         return Result.success();
     }
     @DeleteMapping("/availabilities/all")
-    public Result deleteAllMyAvailabilities() {
-        log.info("教练正在请求一键清空所有可用时间。");
+    public Result<String> deleteAllMyAvailabilities() {
+        log.info("Instructor is deleting all the availabilities.");
         instructorService.deleteAllMyAvailabilities();
+        return Result.success();
+    }
+    @PostMapping("/lessons")
+    public Result<String> createLessons(@RequestBody LessonCreateDTO lessonCreateDTO){
+        log.info("Creating a new lesson template:{}",lessonCreateDTO);
+        instructorService.createLesson(lessonCreateDTO);
         return Result.success();
     }
 

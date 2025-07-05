@@ -1,7 +1,9 @@
 package com.geer.snowboard_lesson_booking.entity;
 
-import java.math.BigDecimal;
+import lombok.Data;
 
+import java.math.BigDecimal;
+@Data
 public class LessonPricing {
     private Long id;
     private Long lessonTemplateId;
