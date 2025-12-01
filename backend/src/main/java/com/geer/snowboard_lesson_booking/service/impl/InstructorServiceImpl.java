@@ -2,6 +2,7 @@ package com.geer.snowboard_lesson_booking.service.impl;
 
 import com.geer.snowboard_lesson_booking.dto.*;
 import com.geer.snowboard_lesson_booking.entity.*;
+import com.geer.snowboard_lesson_booking.enums.LessonStatus;
 import com.geer.snowboard_lesson_booking.exception.OperationFailedException;
 import com.geer.snowboard_lesson_booking.exception.PermissionDeniedException;
 import com.geer.snowboard_lesson_booking.exception.RegistrationFailedException;
@@ -12,6 +13,7 @@ import com.geer.snowboard_lesson_booking.utils.BaseContext;
 import com.geer.snowboard_lesson_booking.vo.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -335,7 +337,6 @@ public class InstructorServiceImpl implements InstructorService {
         LessonTemplate lessonTemplate = new LessonTemplate();
         BeanUtils.copyProperties(lessonCreateDTO, lessonTemplate);
         lessonTemplate.setInstructorId(instructorId);
-
         lessonTemplateMapper.insert(lessonTemplate);
 
         // 2. 获取上一步操作中自动生成的主键ID
