@@ -14,7 +14,7 @@ spring:
 
 custom:
   mail:
-    sender: snowboardgeer@gamil.com
+    sender: snowboardgeer@gmail.com
   host-link: http://localhost:8080
 snowboard:
   driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,7 +22,7 @@ snowboard:
   port: 3306
   database: ski_booking_db
   username: root
-  password: Cc@981208
+  password: root
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
   type-aliases-package: com.geer.snowboard_lesson_booking.entity
